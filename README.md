@@ -14,14 +14,14 @@ Proyek **ArenaKita** adalah pengembangan sisi *Front End* untuk *platform* berba
 
 Proyek ini diinisialisasi menggunakan *recommended defaults* dari Next.js, memastikan performa dan pengalaman pengembang yang optimal.
 
-| Kategori | Teknologi | Konfigurasi |
-| :--- | :--- | :--- |
-| **Framework** | **Next.js** | App Router, Default Next.js Structure |
-| **Bahasa** | **TypeScript** | **Yes** (Memberikan *static typing*) |
-| **Styling** | **Tailwind CSS** | **Yes** (Untuk *styling* cepat dan responsif) |
-| **Linter** | **ESLint** | **Yes** (Standar kualitas kode) |
-| **Compiler** | **Turbopack** | **Yes** (Meningkatkan kecepatan *development*) |
-| **Package Manager**| **pnpm** | Digunakan untuk manajemen *dependencies* |
+| Kategori | Teknologi |
+| :--- | :--- |
+| **Framework** | **Next.js** |
+| **Bahasa** | **TypeScript** |
+| **Styling** | **Tailwind CSS** |
+| **Linter** | **ESLint** |
+| **Compiler** | **Turbopack** |
+| **Package Manager**| **pnpm** |
 
 ## 🚀 Instalasi dan Menjalankan Proyek
 
