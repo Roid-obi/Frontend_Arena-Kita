@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from '../contexts/AuthContext';
 import "./globals.css";
+import CookieDebugger from "@/components/CookieDebugger";
 
 export const metadata: Metadata = {
   title: 'Arena Kita',
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
+          <CookieDebugger />
         {children}
       </AuthProvider>
       </body>

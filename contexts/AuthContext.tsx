@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-import { User, LoginData, RegisterData, AuthContextType } from '@/types/auth';
+import { User, LoginData, RegisterData, AuthContextType, LoginResponse, RegisterResponse } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -10,17 +10,17 @@ const API_BASE = 'http://127.0.0.1:8000/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userType, setUserType] = useState<'user' | 'owner' | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is logged in on mount
     const savedUser = Cookies.get('user');
-    const savedUserType = Cookies.get('userType');
+    const savedToken = Cookies.get('token');
 
-    if (savedUser && savedUserType) {
+    if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
-      setUserType(savedUserType as 'user' | 'owner');
+      setToken(savedToken);
     }
     setIsLoading(false);
   }, []);
@@ -40,25 +40,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
       }
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
       
-      // Simpan user data ke state dan cookies
-      const userData: User = {
-        id: data.user?.id,
-        full_name: data.user?.full_name || '',
-        email: data.user?.email || email,
-        phone_number: data.user?.phone_number || '',
-      };
-
-      setUser(userData);
-      setUserType(type);
-      
-      Cookies.set('user', JSON.stringify(userData), { expires: 7 });
-      Cookies.set('userType', type, { expires: 7 });
-      Cookies.set('token', data.token || 'dummy-token', { expires: 7 }); // Ganti dengan token sebenarnya dari API
+      if (data.status === 'success') {
+        // Simpan user data dan token ke state dan cookies
+        setUser(data.data.user);
+        setToken(data.data.token);
+        
+        Cookies.set('user', JSON.stringify(data.data.user), { expires: 7 });
+        Cookies.set('token', data.data.token, { expires: 7 });
+        Cookies.set('userRole', data.data.user.role, { expires: 7 }); // Simpan role dari API
+      } else {
+        throw new Error(data.message || 'Login failed');
+      }
 
     } catch (error) {
       console.error('Login error:', error);
@@ -77,11 +75,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Registration failed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
       }
 
-      // Auto login setelah register
-      await login(data.email, data.password, 'user');
+      const responseData: RegisterResponse = await response.json();
+      
+      if (responseData.status === 'success') {
+        // Auto login setelah register berhasil
+        setUser(responseData.data.user);
+        setToken(responseData.data.token);
+        
+        Cookies.set('user', JSON.stringify(responseData.data.user), { expires: 7 });
+        Cookies.set('token', responseData.data.token, { expires: 7 });
+        Cookies.set('userRole', responseData.data.user.role, { expires: 7 });
+      } else {
+        throw new Error(responseData.message || 'Registration failed');
+      }
 
     } catch (error) {
       console.error('Registration error:', error);
@@ -91,27 +101,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      // Panggil API logout
-      await fetch(`${API_BASE}/v1/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Cookies.get('token')}`,
-        },
-      });
+      const currentToken = Cookies.get('token');
+      
+      // Panggil API logout hanya jika ada token
+      if (currentToken) {
+        await fetch(`${API_BASE}/v1/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout API error:', error);
     } finally {
       // Clear state dan cookies
       setUser(null);
-      setUserType(null);
+      setToken(null);
       Cookies.remove('user');
-      Cookies.remove('userType');
       Cookies.remove('token');
+      Cookies.remove('userRole');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, userType, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      login, 
+      register, 
+      logout, 
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );

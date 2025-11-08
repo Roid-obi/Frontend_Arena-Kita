@@ -23,8 +23,8 @@ export default function LoginPage() {
     try {
       await login(email, password, userType);
       router.push('/');
-    } catch (err) {
-      setError('Login failed. Please check your credentials.');
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -36,12 +36,15 @@ export default function LoginPage() {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Sign in to your account
         </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Choose your role to continue
+        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
-            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
               {error}
             </div>
           )}
@@ -57,9 +60,14 @@ export default function LoginPage() {
                 onChange={(e) => setUserType(e.target.value as 'user' | 'owner')}
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
               >
-                <option value="user">User</option>
+                <option value="user">User / Admin</option>
                 <option value="owner">Owner</option>
               </select>
+              <p className="mt-1 text-xs text-gray-500">
+                {userType === 'user' 
+                  ? 'Login sebagai User biasa atau Admin' 
+                  : 'Login sebagai Pemilik Arena'}
+              </p>
             </div>
 
             <div>
@@ -75,6 +83,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Enter your email"
               />
             </div>
 
@@ -91,6 +100,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Enter your password"
               />
             </div>
 
@@ -98,7 +108,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
@@ -107,9 +117,9 @@ export default function LoginPage() {
             <div className="text-center">
               <Link
                 href="/register"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-blue-600 hover:text-blue-500 text-sm"
               >
-                Dont have an account? Sign up
+                Dont have an account? Sign up as User
               </Link>
             </div>
           </form>
