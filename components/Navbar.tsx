@@ -49,6 +49,11 @@ export default function Navbar() {
                   >
                     Logout
                   </button>
+                  <div className="avatar">
+                    <div className="w-[48] rounded">
+                      <img src="https://img.daisyui.com/images/profile/demo/batperson@192.webp" />
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (
