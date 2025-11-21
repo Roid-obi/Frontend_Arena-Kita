@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,8 +13,21 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Jika sudah login, jangan biarkan akses ke halaman login — arahkan sesuai role
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === 'admin') {
+        router.push('/dashboard/admin');
+      } else if (user.role === 'owner') {
+        router.push('/dashboard/owner');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,25 +53,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Choose your role to continue
-        </p>
-      </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#f9fafb', color: '#1a1a1a' }}>
+      <Navbar />
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-8 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          <div className="bg-white py-8 px-6 rounded-2xl shadow-xl">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+              <h2 className="text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+              <p className="mt-2 text-sm text-gray-600">Choose your role to continue</p>
+            </div>
           {error && (
             <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
               {error}
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-6 mt-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="userType" className="block text-sm font-medium text-gray-700">
                 Login as
@@ -112,25 +124,23 @@ export default function LoginPage() {
               />
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0d47a1] hover:bg-[#083055] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0d47a1] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Signing in...' : 'Sign in'}
+                </button>
+              </div>
 
-            <div className="text-center">
-              <Link
-                href="/register"
-                className="font-medium text-blue-600 hover:text-blue-500 text-sm"
-              >
-                Dont have an account? Sign up as User
-              </Link>
-            </div>
-          </form>
+              <div className="text-center">
+                <Link href="/register" className="font-medium text-[#0d47a1] hover:text-[#083055] text-sm">
+                  Dont have an account? Sign up as User
+                </Link>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
