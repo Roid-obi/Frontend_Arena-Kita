@@ -45,14 +45,21 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(formData);
+      const role = await register(formData);
       setSuccessMessage('Registration successful! Redirecting...');
-      // Redirect setelah 2 detik
+      // Redirect setelah 1.5 detik berdasarkan role
       setTimeout(() => {
-        router.push('/');
-      }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+        if (role === 'admin') {
+          router.push('/dashboard/admin');
+        } else if (role === 'owner') {
+          router.push('/dashboard/owner');
+        } else {
+          router.push('/');
+        }
+      }, 1500);
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'message' in err ? (err as { message?: string }).message : undefined;
+      setError(message ?? 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

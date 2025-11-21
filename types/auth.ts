@@ -49,8 +49,8 @@ export interface RegisterData {
 export interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string, type: 'user' | 'owner') => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (email: string, password: string, type: 'user' | 'owner') => Promise<'user' | 'owner' | 'admin' | void>;
+  register: (data: RegisterData) => Promise<'user' | 'owner' | 'admin' | void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }

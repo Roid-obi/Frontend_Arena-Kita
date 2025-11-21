@@ -48,12 +48,12 @@ export default function Navbar() {
   const { user, token, logout, isLoading } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 shadow-md" style={{ backgroundColor: '#0d47a1' }}>
+    <nav className="sticky top-0 z-50 shadow-md" style={{ backgroundColor: '#ffffff' }}>
       <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-white">ArenaKita</div>
+            <div className="text-2xl font-bold" style={{ color: '#0d47a1' }}>ArenaKita</div>
           </div>
 
           {/* Search Bar */}
@@ -62,8 +62,8 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Cari venue atau olahraga..."
-                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2"
-                style={{ backgroundColor: '#f9fafb', color: '#1a1a1a' }}
+                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 border border-gray-200"
+                style={{ backgroundColor: '#f3f4f6', color: '#1a1a1a' }}
               />
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <SearchIcon />
@@ -75,14 +75,14 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             {user && token ? (
               <>
-                <button className="p-2 rounded-lg hover:bg-blue-800 transition text-white">
+                <button className="p-2 rounded-lg bg-[#0d47a1] hover:bg-[#083055] transition text-white">
                   <ShoppingCartIcon />
                 </button>
 
                 <div className="relative">
                   <button
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="p-2 rounded-lg hover:bg-blue-800 transition text-white"
+                    className="p-2 rounded-lg bg-[#0d47a1] hover:bg-[#083055] transition text-white"
                   >
                     <UserIcon />
                   </button>
@@ -114,13 +114,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition duration-200"
+                  className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition duration-200"
+                  className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-md transition duration-200"
                 >
                   Register
                 </Link>

@@ -1,5 +1,7 @@
-'use client';
-import React, { useState } from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 
@@ -72,6 +74,22 @@ const recommendations = [
 const ArenaKita = () => {
   const [bannerIndex, setBannerIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const router = useRouter();
+
+  // Jika user yang sedang login adalah admin, langsung arahkan ke dashboard admin
+  useEffect(() => {
+    try {
+      const role = Cookies.get('userRole');
+      // Jika admin -> dashboard admin, jika owner -> dashboard owner
+      if (role === 'admin') {
+        router.push('/dashboard/admin');
+      } else if (role === 'owner') {
+        router.push('/dashboard/owner');
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [router]);
 
   const nextBanner = () => {
     if (!isTransitioning) {

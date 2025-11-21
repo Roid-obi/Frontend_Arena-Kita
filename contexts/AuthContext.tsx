@@ -54,6 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         Cookies.set('user', JSON.stringify(data.data.user), { expires: 7 });
         Cookies.set('token', data.data.token, { expires: 7 });
         Cookies.set('userRole', data.data.user.role, { expires: 7 }); // Simpan role dari API
+        // Kembalikan role untuk digunakan oleh pemanggil (mis. redirect setelah login)
+        return data.data.user.role;
       } else {
         throw new Error(data.message || 'Login failed');
       }
@@ -89,6 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         Cookies.set('user', JSON.stringify(responseData.data.user), { expires: 7 });
         Cookies.set('token', responseData.data.token, { expires: 7 });
         Cookies.set('userRole', responseData.data.user.role, { expires: 7 });
+        return responseData.data.user.role;
       } else {
         throw new Error(responseData.message || 'Registration failed');
       }

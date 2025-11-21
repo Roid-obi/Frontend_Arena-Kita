@@ -21,10 +21,18 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password, userType);
-      router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const role = await login(email, password, userType);
+      // Redirect berdasarkan role: admin -> admin dashboard, owner -> owner dashboard, user -> homepage
+      if (role === 'admin') {
+        router.push('/dashboard/admin');
+      } else if (role === 'owner') {
+        router.push('/dashboard/owner');
+      } else {
+        router.push('/');
+      }
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'message' in err ? (err as { message?: string }).message : undefined;
+      setError(message ?? 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
