@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 const SearchIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,6 +46,8 @@ const LogOutIcon = () => (
 
 export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const { user, token, logout, isLoading } = useAuth();
 
   return (
@@ -112,23 +115,30 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link
-                  href="/login"
+                <button
+                  onClick={() => setShowLoginModal(true)}
                   className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200"
                 >
                   Login
-                </Link>
-                <Link
-                  href="/register"
+                </button>
+                <button
+                  onClick={() => setShowRegisterModal(true)}
                   className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-md transition duration-200"
                 >
                   Register
-                </Link>
+                </button>
               </>
             )}
           </div>
         </div>
       </div>
+
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={() => setShowLoginModal(true)}
+      />
     </nav>
   );
 }

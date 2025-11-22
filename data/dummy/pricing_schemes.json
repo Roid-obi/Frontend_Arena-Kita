@@ -1,0 +1,8 @@
+[
+  { "id": 1, "field_id": 1, "duration_minutes": 60, "price": 120000.00, "description": "Per Jam", "created_at": "2025-02-01T07:07:00.000Z", "updated_at": "2025-02-01T07:07:00.000Z", "deleted_at": null },
+  { "id": 2, "field_id": 1, "duration_minutes": 120, "price": 220000.00, "description": "Paket 2 Jam", "created_at": "2025-02-01T07:08:00.000Z", "updated_at": "2025-02-01T07:08:00.000Z", "deleted_at": null },
+  { "id": 3, "field_id": 2, "duration_minutes": 60, "price": 100000.00, "description": "Per Jam", "created_at": "2025-02-01T07:09:00.000Z", "updated_at": "2025-11-01T07:09:00.000Z", "deleted_at": null },
+  { "id": 4, "field_id": 3, "duration_minutes": 90, "price": 150000.00, "description": "Sesi 90 Menit", "created_at": "2024-05-10T06:20:00.000Z", "updated_at": "2024-05-10T06:20:00.000Z", "deleted_at": null },
+  { "id": 5, "field_id": 4, "duration_minutes": 60, "price": 80000.00, "description": "Per Jam", "created_at": "2025-03-12T08:20:00.000Z", "updated_at": "2025-03-12T08:20:00.000Z", "deleted_at": null },
+  { "id": 6, "field_id": 5, "duration_minutes": 180, "price": 400000.00, "description": "Paket 3 Jam", "created_at": "2024-08-01T06:15:00.000Z", "updated_at": "2025-01-01T06:15:00.000Z", "deleted_at": null }
+]

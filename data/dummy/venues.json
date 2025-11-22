@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "owner_id": 1,
+    "venue_name": "Lapangan Serbaguna A",
+    "description": "Lapangan futsal indoor dengan kualitas lantai bagus.",
+    "address": "Jalan Merdeka No. 10",
+    "city": "Bandung",
+    "gps_coordinate": "-6.914744,107.609810",
+    "opening_time": "07:00:00",
+    "closing_time": "23:00:00",
+    "created_at": "2025-02-01T07:00:00.000Z",
+    "updated_at": "2025-02-10T07:00:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 2,
+    "owner_id": 1,
+    "venue_name": "Arena Bola B",
+    "description": "Lapangan sepakbola mini dengan fasilitas lampu malam.",
+    "address": "Jl. Melati No. 5",
+    "city": "Bandung",
+    "gps_coordinate": "-6.917463,107.619123",
+    "opening_time": "06:00:00",
+    "closing_time": "22:00:00",
+    "created_at": "2024-05-10T06:00:00.000Z",
+    "updated_at": "2024-12-15T06:00:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 3,
+    "owner_id": 2,
+    "venue_name": "Court Basket C",
+    "description": "Lapangan basket outdoor dengan ring standar.",
+    "address": "Komplek Olahraga No. 2",
+    "city": "Jakarta",
+    "gps_coordinate": "-6.200000,106.816666",
+    "opening_time": "08:00:00",
+    "closing_time": "21:00:00",
+    "created_at": "2025-03-12T08:00:00.000Z",
+    "updated_at": "2025-03-12T08:00:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 4,
+    "owner_id": 3,
+    "venue_name": "Stadion Mini D",
+    "description": "Fasilitas lengkap untuk latihan dan pertandingan kecil.",
+    "address": "Jl. Sudirman No. 99",
+    "city": "Surabaya",
+    "gps_coordinate": "-7.257472,112.752088",
+    "opening_time": "06:00:00",
+    "closing_time": "23:30:00",
+    "created_at": "2024-08-01T06:00:00.000Z",
+    "updated_at": "2025-01-01T06:00:00.000Z",
+    "deleted_at": null
+  }
+]

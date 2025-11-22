@@ -184,53 +184,57 @@ const ArenaKita = () => {
           </div>
         </div>
       </div>
+        <div className="mx-auto px-4 md:px-8 lg:px-[120px] ">
+
+        {/* Kategori */}
+          <section className="mb-8 md:mb-12">
+            {/* <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2> */}
+            <div className="relative -mx-4 md:-mx-8 lg:-mx-0">
+              <div className="px-4 md:px-8 lg:px-0">
+                <div
+                  id="category-container"
+                  className="flex space-x-4 overflow-x-auto  px-2"
+                  style={{ 
+                    scrollbarWidth: 'none', 
+                    msOverflowStyle: 'none',
+                    scrollBehavior: 'smooth',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
+                >
+                  {categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="flex-none w-40 md:w-48 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+                    >
+                      <img src={category.image} alt={category.name} className="w-full h-24 md:h-32 object-cover" />
+                      {/* <div className="p-3 md:p-4 bg-white text-center">
+                        <div className="text-2xl md:text-3xl mb-1 md:mb-2">{category.icon}</div>
+                        <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
+                      </div> */}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <button
+                onClick={() => scrollCategory('prev')}
+                className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+              >
+                <ChevronLeftIcon />
+              </button>
+              
+              <button
+                onClick={() => scrollCategory('next')}
+                className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          </section>
+        </div>
 
       <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-4 md:py-8">
-        {/* Kategori */}
-        <section className="mb-8 md:mb-12">
-          {/* <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2> */}
-          <div className="relative -mx-4 md:-mx-8 lg:-mx-0">
-            <div className="px-4 md:px-8 lg:px-0">
-              <div
-                id="category-container"
-                className="flex space-x-4 overflow-x-auto py-6 px-2"
-                style={{ 
-                  scrollbarWidth: 'none', 
-                  msOverflowStyle: 'none',
-                  scrollBehavior: 'smooth',
-                  WebkitOverflowScrolling: 'touch'
-                }}
-              >
-                {categories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex-none w-40 md:w-48 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
-                  >
-                    <img src={category.image} alt={category.name} className="w-full h-24 md:h-32 object-cover" />
-                    {/* <div className="p-3 md:p-4 bg-white text-center">
-                      <div className="text-2xl md:text-3xl mb-1 md:mb-2">{category.icon}</div>
-                      <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
-                    </div> */}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <button
-              onClick={() => scrollCategory('prev')}
-              className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
-            >
-              <ChevronLeftIcon />
-            </button>
-            
-            <button
-              onClick={() => scrollCategory('next')}
-              className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
-            >
-              <ChevronRightIcon />
-            </button>
-          </div>
-        </section>
+        
 
         {/* Terdekat */}
         <section className="mb-8 md:mb-12">

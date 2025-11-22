@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "full_name": "Owner One",
+    "email": "owner1@example.com",
+    "password": "$2b$10$ownerhashed1",
+    "phone_number": "081300000001",
+    "bank_name": "BCA",
+    "account_number": "1234567890",
+    "account_name": "Owner One",
+    "created_at": "2025-01-10T08:00:00.000Z",
+    "updated_at": "2025-06-01T08:00:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 2,
+    "full_name": "Owner Two",
+    "email": "owner2@example.com",
+    "password": "$2b$10$ownerhashed2",
+    "phone_number": "081300000002",
+    "bank_name": "Mandiri",
+    "account_number": "0987654321",
+    "account_name": "Owner Two",
+    "created_at": "2024-11-05T09:00:00.000Z",
+    "updated_at": "2025-02-02T09:00:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 3,
+    "full_name": "Owner Three",
+    "email": "owner3@example.com",
+    "password": "$2b$10$ownerhashed3",
+    "phone_number": "081300000003",
+    "bank_name": "BRI",
+    "account_number": "1122334455",
+    "account_name": "Owner Three",
+    "created_at": "2023-07-20T10:30:00.000Z",
+    "updated_at": "2024-12-01T10:30:00.000Z",
+    "deleted_at": null
+  }
+]

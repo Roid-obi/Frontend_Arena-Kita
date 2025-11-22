@@ -1,22 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import LoginModal from '@/components/LoginModal';
 import Navbar from '@/components/Navbar';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState<'user' | 'owner'>('user');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { login, user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Jika sudah login, jangan biarkan akses ke halaman login — arahkan sesuai role
   useEffect(() => {
     if (!authLoading && user) {
       if (user.role === 'admin') {
@@ -29,120 +22,18 @@ export default function LoginPage() {
     }
   }, [user, authLoading, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const role = await login(email, password, userType);
-      // Redirect berdasarkan role: admin -> admin dashboard, owner -> owner dashboard, user -> homepage
-      if (role === 'admin') {
-        router.push('/dashboard/admin');
-      } else if (role === 'owner') {
-        router.push('/dashboard/owner');
-      } else {
-        router.push('/');
-      }
-    } catch (err: unknown) {
-      const message = err && typeof err === 'object' && 'message' in err ? (err as { message?: string }).message : undefined;
-      setError(message ?? 'Login failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f9fafb', color: '#1a1a1a' }}>
       <Navbar />
-
-      <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-8 flex items-center justify-center">
-        <div className="w-full max-w-md">
-          <div className="bg-white py-8 px-6 rounded-2xl shadow-xl">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-              <h2 className="text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-              <p className="mt-2 text-sm text-gray-600">Choose your role to continue</p>
-            </div>
-          {error && (
-            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
-              {error}
-            </div>
-          )}
-
-            <form className="space-y-6 mt-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="userType" className="block text-sm font-medium text-gray-700">
-                Login as
-              </label>
-              <select
-                id="userType"
-                value={userType}
-                onChange={(e) => setUserType(e.target.value as 'user' | 'owner')}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              >
-                <option value="user">User / Admin</option>
-                <option value="owner">Owner</option>
-              </select>
-              <p className="mt-1 text-xs text-gray-500">
-                {userType === 'user' 
-                  ? 'Login sebagai User biasa atau Admin' 
-                  : 'Login sebagai Pemilik Arena'}
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter your password"
-              />
-            </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0d47a1] hover:bg-[#083055] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0d47a1] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
-                </button>
-              </div>
-
-              <div className="text-center">
-                <Link href="/register" className="font-medium text-[#0d47a1] hover:text-[#083055] text-sm">
-                  Dont have an account? Sign up as User
-                </Link>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      <LoginModal isOpen={true} onClose={() => router.push('/')} />
     </div>
   );
 }

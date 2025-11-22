@@ -6,7 +6,7 @@ import { User, LoginData, RegisterData, AuthContextType, LoginResponse, Register
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE = 'https://dev.api.arenakita.my.id/api';
+const API_BASE = 'http://127.0.0.1:8000/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
