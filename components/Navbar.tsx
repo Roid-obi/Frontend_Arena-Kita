@@ -93,7 +93,7 @@ export default function Navbar() {
                   {showProfileMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
                       {isLoading ? (
-                        <div className="w-48 px-4 py-2 text-sm text-gray-600">Loading...</div>
+                        <div className="w-48 px-4 py-2 text-sm text-gray-600">Memuat...</div>
                       ) : (
                         <>
                           <button className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-2">
@@ -105,7 +105,7 @@ export default function Navbar() {
                             className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-2"
                           >
                             <LogOutIcon />
-                            <span>Logout</span>
+                            <span>Keluar</span>
                           </button>
                         </>
                       )}
@@ -119,13 +119,13 @@ export default function Navbar() {
                   onClick={() => setShowLoginModal(true)}
                   className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200"
                 >
-                  Login
+                  Masuk
                 </button>
                 <button
                   onClick={() => setShowRegisterModal(true)}
                   className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-md transition duration-200"
                 >
-                  Register
+                  Daftar
                 </button>
               </>
             )}

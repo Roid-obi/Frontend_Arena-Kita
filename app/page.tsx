@@ -4,6 +4,10 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import VenueCard from '@/components/VenueCard';
+import venuesData from '@/data/dummy/venues.json';
+import fieldsData from '@/data/dummy/fields.json';
+import venuePhotosData from '@/data/dummy/venue_photos.json';
 
 // SVG Icons Components
 const ChevronLeftIcon = () => (
@@ -18,23 +22,6 @@ const ChevronRightIcon = () => (
   </svg>
 );
 
-
-const MapPinIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-    <circle cx="12" cy="10" r="3"></circle>
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <polyline points="12 6 12 12 16 14"></polyline>
-  </svg>
-);
-
-// Search, cart and user icons moved to `components/Navbar.tsx`.
-
 // Dummy Data
 const banners = [
   { id: 1, title: 'Booking Lapangan Mudah', subtitle: 'Temukan dan booking lapangan olahraga favoritmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Booking+Lapangan+Mudah' },
@@ -42,34 +29,52 @@ const banners = [
   { id: 3, title: 'Harga Terjangkau', subtitle: 'Dapatkan harga terbaik untuk lapangan impianmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Harga+Terjangkau' }
 ];
 
-const categories = [
-  { id: 1, name: 'Futsal', icon: '⚽', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Futsal' },
-  { id: 2, name: 'Badminton', icon: '🏸', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Badminton' },
-  { id: 3, name: 'Basketball', icon: '🏀', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Basketball' },
-  { id: 4, name: 'Tenis', icon: '🎾', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Tenis' },
-  { id: 5, name: 'Voli', icon: '🏐', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Voli' },
-  { id: 6, name: 'Renang', icon: '🏊', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Renang' },
-  { id: 7, name: 'Tempur', icon: '', image: 'https://placehold.co/300x200/0d47a1/ffffff?text=Tempur' },
-];
+// Extract unique sport types from fields data to create categories
+const categories = Array.from(
+  new Map(
+    fieldsData.map((field) => [
+      field.sport_type,
+      {
+        id: fieldsData.findIndex((f) => f.sport_type === field.sport_type) + 1,
+        name: field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase(),
+        icon: '⚽',
+        image: field.field_photo_url,
+      },
+    ])
+  ).values()
+);
 
-const venues = [
-  { id: 1, name: 'Arena Futsal Sentral', location: 'Jakarta Pusat', hours: '08:00 - 23:00', image: 'https://placehold.co/400x300/f97316/ffffff?text=Arena+Futsal', category: 'Futsal' },
-  { id: 2, name: 'Badminton Hall Premium', location: 'Jakarta Selatan', hours: '06:00 - 22:00', image: 'https://placehold.co/400x300/f97316/ffffff?text=Badminton+Hall', category: 'Badminton' },
-  { id: 3, name: 'Basketball Court 88', location: 'Jakarta Barat', hours: '07:00 - 21:00', image: 'https://placehold.co/400x300/f97316/ffffff?text=Basketball+Court', category: 'Basketball' },
-  { id: 4, name: 'Tennis Center Elite', location: 'Jakarta Timur', hours: '06:00 - 20:00', image: 'https://placehold.co/400x300/f97316/ffffff?text=Tennis+Center', category: 'Tenis' },
-  { id: 5, name: 'Futsal Arena Pro', location: 'Jakarta Utara', hours: '09:00 - 24:00', image: 'https://placehold.co/400x300/f97316/ffffff?text=Futsal+Pro', category: 'Futsal' }
-];
+// Transform venues data to match component structure
+interface VenuePhoto {
+  id: number;
+  venue_id: number;
+  photo_url: string;
+  created_at: string;
+}
 
-const recommendations = [
-  { id: 1, name: 'Sport Center Mega', location: 'Tangerang', hours: '08:00 - 22:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Sport+Center' },
-  { id: 2, name: 'Lapangan Hijau Indah', location: 'Bekasi', hours: '07:00 - 23:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Lapangan+Hijau' },
-  { id: 3, name: 'Arena Olahraga Mandiri', location: 'Depok', hours: '06:00 - 21:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Arena+Mandiri' },
-  { id: 4, name: 'Champion Sport Hall', location: 'Bogor', hours: '08:00 - 22:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Champion+Hall' },
-  { id: 5, name: 'Victory Sports Complex', location: 'Jakarta Pusat', hours: '07:00 - 23:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Victory+Complex' },
-  { id: 6, name: 'Prime Athletic Center', location: 'Jakarta Selatan', hours: '06:00 - 22:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Prime+Center' },
-  { id: 7, name: 'Golden Arena Sport', location: 'Jakarta Barat', hours: '08:00 - 23:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Golden+Arena' },
-  { id: 8, name: 'Star Sport Venue', location: 'Jakarta Timur', hours: '07:00 - 22:00', image: 'https://placehold.co/400x300/0d47a1/ffffff?text=Star+Venue' }
-];
+const getVenueImages = (venueId: number) => {
+  return venuePhotosData
+    .filter((photo: VenuePhoto) => photo.venue_id === venueId)
+    .map((photo: VenuePhoto) => photo.photo_url);
+};
+
+const venues = venuesData.slice(0, 5).map((venue) => ({
+  id: venue.id,
+  name: venue.venue_name,
+  location: venue.city,
+  hours: `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}`,
+  images: getVenueImages(venue.id),
+  category: 'Olahraga',
+}));
+
+// Use all venues as recommendations
+const recommendations = venuesData.map((venue) => ({
+  id: venue.id,
+  name: venue.venue_name,
+  location: venue.city,
+  hours: `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}`,
+  images: getVenueImages(venue.id),
+}));
 
 const ArenaKita = () => {
   const [bannerIndex, setBannerIndex] = useState(0);
@@ -86,7 +91,7 @@ const ArenaKita = () => {
       } else if (role === 'owner') {
         router.push('/dashboard/owner');
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }, [router]);
@@ -128,7 +133,7 @@ const ArenaKita = () => {
       <Navbar />
 
       {/* Banner Carousel */}
-      <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-4 md:py-8">
+      <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-8">
         <div className="relative h-64 md:h-96 overflow-hidden rounded-2xl shadow-xl">
           {banners.map((banner, index) => (
             <div
@@ -165,7 +170,7 @@ const ArenaKita = () => {
             <ChevronRightIcon />
           </button>
 
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
             {banners.map((_, idx) => (
               <button
                 key={idx}
@@ -176,24 +181,24 @@ const ArenaKita = () => {
                     setTimeout(() => setIsTransitioning(false), 500);
                   }
                 }}
-                className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${
-                  idx === bannerIndex ? 'bg-white' : 'bg-white bg-opacity-50'
+                className={`w-2 h-2 md:w-2 md:h-2 rounded-full transition-all ${
+                  idx === bannerIndex ? 'bg-white' : 'bg-white opacity-50'
                 }`}
               />
             ))}
           </div>
         </div>
       </div>
-        <div className="mx-auto px-4 md:px-8 lg:px-[120px] ">
+        <div className="mx-auto px-4 md:px-8 lg:px-[150px] ">
 
         {/* Kategori */}
           <section className="mb-8 md:mb-12">
             {/* <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2> */}
-            <div className="relative -mx-4 md:-mx-8 lg:-mx-0">
+            <div className="relative -mx-4 md:-mx-8 lg:mx-0">
               <div className="px-4 md:px-8 lg:px-0">
                 <div
                   id="category-container"
-                  className="flex space-x-4 overflow-x-auto  px-2"
+                  className="flex space-x-4 overflow-x-auto py-6 px-2"
                   style={{ 
                     scrollbarWidth: 'none', 
                     msOverflowStyle: 'none',
@@ -204,13 +209,17 @@ const ArenaKita = () => {
                   {categories.map((category) => (
                     <div
                       key={category.id}
-                      className="flex-none w-40 md:w-48 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105"
+                      className="flex-none w-40 md:w-48 h-24 md:h-32 rounded-lg overflow-hidden shadow-lg cursor-pointer transition relative flex items-center justify-center"
+                      style={{
+                        backgroundImage: `url(${category.image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
                     >
-                      <img src={category.image} alt={category.name} className="w-full h-24 md:h-32 object-cover" />
-                      {/* <div className="p-3 md:p-4 bg-white text-center">
-                        <div className="text-2xl md:text-3xl mb-1 md:mb-2">{category.icon}</div>
-                        <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
-                      </div> */}
+                      <div className="absolute inset-0 bg-[#00000079]"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <h3 className="font-bold text-base md:text-lg text-white text-center px-2">{category.name}</h3>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -233,12 +242,12 @@ const ArenaKita = () => {
           </section>
         </div>
 
-      <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-4 md:py-8">
+      <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-8">
         
 
         {/* Terdekat */}
         <section className="mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Terdekat</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
           <div className="relative -mx-4 md:-mx-8 lg:mx-0">
             <div className="px-4 md:px-8 lg:px-0">
               <div
@@ -252,22 +261,8 @@ const ArenaKita = () => {
                 }}
               >
                 {venues.map((venue) => (
-                  <div
-                    key={venue.id}
-                    className="flex-none w-64 md:w-72 rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl transition transform hover:scale-105 bg-white"
-                  >
-                    <img src={venue.image} alt={venue.name} className="w-full h-40 md:h-48 object-cover" />
-                    <div className="p-3 md:p-4">
-                      <h3 className="font-bold text-base md:text-lg mb-2">{venue.name}</h3>
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <div className="mr-1"><MapPinIcon /></div>
-                        <span className="text-xs md:text-sm">{venue.location}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <div className="mr-1"><ClockIcon /></div>
-                        <span className="text-xs md:text-sm">{venue.hours}</span>
-                      </div>
-                    </div>
+                  <div key={venue.id} className="flex-none w-64 md:w-72">
+                    <VenueCard venue={venue} />
                   </div>
                 ))}
               </div>
@@ -291,26 +286,10 @@ const ArenaKita = () => {
 
         {/* Rekomendasi */}
         <section className="mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Rekomendasi</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Rekomendasi Venue</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {recommendations.map((venue) => (
-              <div
-                key={venue.id}
-                className="rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition transform hover:scale-105 bg-white"
-              >
-                <img src={venue.image} alt={venue.name} className="w-full h-40 md:h-48 object-cover" />
-                <div className="p-3 md:p-4">
-                  <h3 className="font-bold text-base md:text-lg mb-2">{venue.name}</h3>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <div className="mr-1"><MapPinIcon /></div>
-                    <span className="text-xs md:text-sm">{venue.location}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <div className="mr-1"><ClockIcon /></div>
-                    <span className="text-xs md:text-sm">{venue.hours}</span>
-                  </div>
-                </div>
-              </div>
+              <VenueCard key={venue.id} venue={venue} />
             ))}
           </div>
           
@@ -327,7 +306,7 @@ const ArenaKita = () => {
 
       {/* Footer */}
       <footer className="mt-8 md:mt-16 py-8 md:py-12" style={{ backgroundColor: '#0d47a1' }}>
-        <div className="mx-auto px-4 md:px-8 lg:px-[120px]">
+        <div className="mx-auto px-4 md:px-8 lg:px-[150px]">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             <div>
               <h3 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">ArenaKita</h3>
@@ -346,7 +325,7 @@ const ArenaKita = () => {
             <div>
               <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Bantuan</h4>
               <ul className="space-y-2 text-blue-200 text-sm md:text-base">
-                <li><a href="#" className="hover:text-white">FAQ</a></li>
+                <li><a href="#" className="hover:text-white">Pertanyaan Umum</a></li>
                 <li><a href="#" className="hover:text-white">Hubungi Kami</a></li>
                 <li><a href="#" className="hover:text-white">Syarat & Ketentuan</a></li>
               </ul>
@@ -363,7 +342,7 @@ const ArenaKita = () => {
           </div>
           
           <div className="border-t border-blue-800 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-blue-200 text-sm md:text-base">
-            <p>&copy; 2025 ArenaKita. All rights reserved.</p>
+            <p>&copy; 2025 ArenaKita. Hak Cipta Dilindungi.</p>
           </div>
         </div>
       </footer>
