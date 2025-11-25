@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import LoginModal from './LoginModal';
-import RegisterModal from './RegisterModal';
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import LoginModal from "./LoginModal";
+import RegisterModal from "./RegisterModal";
 
 const SearchIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -51,12 +51,14 @@ export default function Navbar() {
   const { user, token, logout, isLoading } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 shadow-md" style={{ backgroundColor: '#ffffff' }}>
+    <nav className="sticky top-0 z-50 shadow-md" style={{ backgroundColor: "#ffffff" }}>
       <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold" style={{ color: '#0d47a1' }}>ArenaKita</div>
+            <div className="text-2xl font-bold" style={{ color: "#0d47a1" }}>
+              ArenaKita
+            </div>
           </div>
 
           {/* Search Bar */}
@@ -66,7 +68,7 @@ export default function Navbar() {
                 type="text"
                 placeholder="Cari venue atau olahraga..."
                 className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 border border-gray-200"
-                style={{ backgroundColor: '#f3f4f6', color: '#1a1a1a' }}
+                style={{ backgroundColor: "#f3f4f6", color: "#1a1a1a" }}
               />
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <SearchIcon />
@@ -83,10 +85,7 @@ export default function Navbar() {
                 </button>
 
                 <div className="relative">
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="p-2 rounded-lg hover:bg-[#0d48a188] transition text-[#0d47a1]"
-                  >
+                  <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="p-2 rounded-lg hover:bg-[#0d48a188] transition text-[#0d47a1]">
                     <UserIcon />
                   </button>
 
@@ -98,10 +97,13 @@ export default function Navbar() {
                         <>
                           <button className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-2">
                             <DashboardIcon />
-                            <span>{user.full_name || 'Dashboard'}</span>
+                            <span>{user.full_name || "Dashboard"}</span>
                           </button>
                           <button
-                            onClick={async () => { await logout(); setShowProfileMenu(false); }}
+                            onClick={async () => {
+                              await logout();
+                              setShowProfileMenu(false);
+                            }}
                             className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-2"
                           >
                             <LogOutIcon />
@@ -115,16 +117,10 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200"
-                >
+                <button onClick={() => setShowLoginModal(true)} className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200">
                   Masuk
                 </button>
-                <button
-                  onClick={() => setShowRegisterModal(true)}
-                  className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-md transition duration-200"
-                >
+                <button onClick={() => setShowRegisterModal(true)} className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-md transition duration-200">
                   Daftar
                 </button>
               </>
@@ -134,11 +130,7 @@ export default function Navbar() {
       </div>
 
       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-      <RegisterModal
-        isOpen={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-        onSwitchToLogin={() => setShowLoginModal(true)}
-      />
+      <RegisterModal isOpen={showRegisterModal} onClose={() => setShowRegisterModal(false)} onSwitchToLogin={() => setShowLoginModal(true)} />
     </nav>
   );
 }

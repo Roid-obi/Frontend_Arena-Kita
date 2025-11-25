@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface VenueCardProps {
   venue: {
@@ -41,11 +41,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
   }, [venue.images.length, isHovered]);
 
   return (
-    <div 
-      className="rounded-lg overflow-hidden shadow-lg cursor-pointer transition bg-white"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="rounded-lg overflow-hidden shadow-lg cursor-pointer transition bg-white" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       {/* Image Carousel */}
       <div className="relative w-full h-40 md:h-48 bg-gray-200 overflow-hidden">
         {venue.images.map((image, idx) => (
@@ -53,22 +49,15 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
             key={idx}
             src={image}
             alt={`${venue.name} - ${idx + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
-              idx === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${idx === currentImageIndex ? "opacity-100" : "opacity-0"}`}
           />
         ))}
-        
+
         {/* Image indicators */}
         {venue.images.length > 1 && (
           <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
             {venue.images.map((_, idx) => (
-              <div
-                key={idx}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentImageIndex ? 'bg-white' : 'bg-white opacity-50'
-                }`}
-              />
+              <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? "bg-white" : "bg-white opacity-50"}`} />
             ))}
           </div>
         )}
@@ -78,11 +67,15 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
       <div className="p-3 md:p-4">
         <h3 className="font-bold text-base md:text-lg mb-2">{venue.name}</h3>
         <div className="flex items-center text-gray-600 mb-2">
-          <div className="mr-1"><MapPinIcon /></div>
+          <div className="mr-1">
+            <MapPinIcon />
+          </div>
           <span className="text-xs md:text-sm">{venue.location}</span>
         </div>
         <div className="flex items-center text-gray-600">
-          <div className="mr-1"><ClockIcon /></div>
+          <div className="mr-1">
+            <ClockIcon />
+          </div>
           <span className="text-xs md:text-sm">{venue.hours}</span>
         </div>
       </div>

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import RegisterModal from '@/components/RegisterModal';
-import Navbar from '@/components/Navbar';
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import RegisterModal from "@/components/RegisterModal";
+import Navbar from "@/components/Navbar";
 
 export default function RegisterPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -12,12 +12,12 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      if (user.role === 'admin') {
-        router.push('/dashboard/admin');
-      } else if (user.role === 'owner') {
-        router.push('/dashboard/owner');
+      if (user.role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (user.role === "owner") {
+        router.push("/dashboard/owner");
       } else {
-        router.push('/');
+        router.push("/");
       }
     }
   }, [user, authLoading, router]);
@@ -31,13 +31,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f9fafb', color: '#1a1a1a' }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
       <Navbar />
-      <RegisterModal
-        isOpen={true}
-        onClose={() => router.push('/')}
-        onSwitchToLogin={() => router.push('/login')}
-      />
+      <RegisterModal isOpen={true} onClose={() => router.push("/")} onSwitchToLogin={() => router.push("/login")} />
     </div>
   );
 }

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import Navbar from '@/components/Navbar';
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import Navbar from "@/components/Navbar";
 
 export default function OwnerDashboardPage() {
   const { user, isLoading } = useAuth();
@@ -13,11 +13,11 @@ export default function OwnerDashboardPage() {
     if (!isLoading) {
       // Jika bukan owner - arahkan ke tempat yang sesuai
       if (!user) {
-        router.push('/');
-      } else if (user.role === 'admin') {
-        router.push('/dashboard/admin');
-      } else if (user.role !== 'owner') {
-        router.push('/');
+        router.push("/");
+      } else if (user.role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (user.role !== "owner") {
+        router.push("/");
       }
     }
   }, [user, isLoading, router]);

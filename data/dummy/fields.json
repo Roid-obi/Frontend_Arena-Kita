@@ -22,6 +22,18 @@
     "deleted_at": null
   },
   {
+    "id": 6,
+    "venue_id": 1,
+    "field_name": "Badminton A3",
+    "sport_type": "BADMINTON",
+    "field_photo_url": "https://picsum.photos/id/1065/1200/800",
+    "status": "AVAILABLE",
+    "created_at": "2025-02-01T07:07:00.000Z",
+    "updated_at": "2025-02-01T07:07:00.000Z",
+    "deleted_at": null
+  },
+
+  {
     "id": 3,
     "venue_id": 2,
     "field_name": "Mini Soccer B1",
@@ -32,6 +44,18 @@
     "updated_at": "2024-05-10T06:05:00.000Z",
     "deleted_at": null
   },
+  {
+    "id": 7,
+    "venue_id": 2,
+    "field_name": "Mini Soccer B2",
+    "sport_type": "SOCCER",
+    "field_photo_url": "https://picsum.photos/id/1041/1200/800",
+    "status": "AVAILABLE",
+    "created_at": "2024-05-10T06:06:00.000Z",
+    "updated_at": "2024-05-10T06:06:00.000Z",
+    "deleted_at": null
+  },
+
   {
     "id": 4,
     "venue_id": 3,
@@ -44,6 +68,18 @@
     "deleted_at": null
   },
   {
+    "id": 8,
+    "venue_id": 3,
+    "field_name": "Volley Court C2",
+    "sport_type": "VOLLEY",
+    "field_photo_url": "https://picsum.photos/id/1052/1200/800",
+    "status": "MAINTENANCE",
+    "created_at": "2025-03-12T08:11:00.000Z",
+    "updated_at": "2025-03-12T08:12:00.000Z",
+    "deleted_at": null
+  },
+
+  {
     "id": 5,
     "venue_id": 4,
     "field_name": "Stadium D1",
@@ -52,6 +88,62 @@
     "status": "AVAILABLE",
     "created_at": "2024-08-01T06:05:00.000Z",
     "updated_at": "2025-01-01T06:05:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 9,
+    "venue_id": 4,
+    "field_name": "Tennis D2",
+    "sport_type": "TENNIS",
+    "field_photo_url": "https://picsum.photos/id/1062/1200/800",
+    "status": "AVAILABLE",
+    "created_at": "2024-08-01T06:06:00.000Z",
+    "updated_at": "2024-08-01T06:06:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 10,
+    "venue_id": 4,
+    "field_name": "Volley D3",
+    "sport_type": "VOLLEY",
+    "field_photo_url": "https://picsum.photos/id/1063/1200/800",
+    "status": "AVAILABLE",
+    "created_at": "2024-08-01T06:07:00.000Z",
+    "updated_at": "2024-08-01T06:07:00.000Z",
+    "deleted_at": null
+  },
+
+  {
+    "id": 11,
+    "venue_id": 5,
+    "field_name": "Badminton E1",
+    "sport_type": "BADMINTON",
+    "field_photo_url": "https://picsum.photos/id/1070/1200/800",
+    "status": "AVAILABLE",
+    "created_at": "2024-09-20T07:05:00.000Z",
+    "updated_at": "2024-09-20T07:05:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 12,
+    "venue_id": 5,
+    "field_name": "Badminton E2",
+    "sport_type": "BADMINTON",
+    "field_photo_url": "https://picsum.photos/id/1071/1200/800",
+    "status": "AVAILABLE",
+    "created_at": "2024-09-20T07:06:00.000Z",
+    "updated_at": "2024-09-20T07:06:00.000Z",
+    "deleted_at": null
+  },
+  {
+    "id": 13,
+    "venue_id": 5,
+    "field_name": "Futsal E3",
+    "sport_type": "FUTSAL",
+    "field_photo_url": "https://picsum.photos/id/1072/1200/800",
+    "status": "MAINTENANCE",
+    "created_at": "2024-09-20T07:07:00.000Z",
+    "updated_at": "2024-12-01T07:07:00.000Z",
     "deleted_at": null
   }
 ]
