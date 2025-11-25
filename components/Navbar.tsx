@@ -52,7 +52,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 shadow-md" style={{ backgroundColor: '#ffffff' }}>
-      <div className="mx-auto px-4 md:px-8 lg:px-[120px] py-3">
+      <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
@@ -75,17 +75,17 @@ export default function Navbar() {
           </div>
 
           {/* Right Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {user && token ? (
               <>
-                <button className="p-2 rounded-lg bg-[#0d47a1] hover:bg-[#083055] transition text-white">
+                <button className="p-2 rounded-lg  hover:bg-[#0d48a188] transition text-[#0d47a1]">
                   <ShoppingCartIcon />
                 </button>
 
                 <div className="relative">
                   <button
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="p-2 rounded-lg bg-[#0d47a1] hover:bg-[#083055] transition text-white"
+                    className="p-2 rounded-lg hover:bg-[#0d48a188] transition text-[#0d47a1]"
                   >
                     <UserIcon />
                   </button>

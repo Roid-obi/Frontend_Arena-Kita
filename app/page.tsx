@@ -8,6 +8,7 @@ import VenueCard from '@/components/VenueCard';
 import venuesData from '@/data/dummy/venues.json';
 import fieldsData from '@/data/dummy/fields.json';
 import venuePhotosData from '@/data/dummy/venue_photos.json';
+import Footer from '@/components/Footer';
 
 // SVG Icons Components
 const ChevronLeftIcon = () => (
@@ -24,9 +25,10 @@ const ChevronRightIcon = () => (
 
 // Dummy Data
 const banners = [
-  { id: 1, title: 'Booking Lapangan Mudah', subtitle: 'Temukan dan booking lapangan olahraga favoritmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Booking+Lapangan+Mudah' },
-  { id: 2, title: 'Venue Terlengkap', subtitle: 'Ratusan venue olahraga siap untuk kamu', image: 'https://placehold.co/1200x400/f97316/ffffff?text=Venue+Terlengkap' },
-  { id: 3, title: 'Harga Terjangkau', subtitle: 'Dapatkan harga terbaik untuk lapangan impianmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Harga+Terjangkau' }
+  { id: 1, title: 'Booking Lapangan Mudah', subtitle: 'Temukan dan booking lapangan olahraga favoritmu', image: 'https://picsum.photos/id/1018/1200/800' },
+  { id: 2, title: 'Venue Terlengkap', subtitle: 'Ratusan venue olahraga siap untuk kamu', image: 'https://picsum.photos/id/1019/1200/800' },
+  { id: 3, title: 'Harga Terjangkau', subtitle: 'Dapatkan harga terbaik untuk lapangan impianmu', image: 'https://picsum.photos/id/1013/1200/800' }
+  // { id: 3, title: 'Harga Terjangkau', subtitle: 'Dapatkan harga terbaik untuk lapangan impianmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Harga+Terjangkau' }
 ];
 
 // Extract unique sport types from fields data to create categories
@@ -38,7 +40,8 @@ const categories = Array.from(
         id: fieldsData.findIndex((f) => f.sport_type === field.sport_type) + 1,
         name: field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase(),
         icon: '⚽',
-        image: field.field_photo_url,
+        // image: field.field_photo_url,
+        image: `https://placehold.co/300x200/0d47a1/ffffff?text=${field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase()}`,
       },
     ])
   ).values()
@@ -147,7 +150,7 @@ const ArenaKita = () => {
                 alt={banner.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-[#00000079] bg-opacity-40 flex items-center justify-center">
                 <div className="text-center text-white px-4">
                   <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-4">{banner.title}</h1>
                   <p className="text-sm md:text-xl">{banner.subtitle}</p>
@@ -189,60 +192,59 @@ const ArenaKita = () => {
           </div>
         </div>
       </div>
-        <div className="mx-auto px-4 md:px-8 lg:px-[150px] ">
-
-        {/* Kategori */}
-          <section className="mb-8 md:mb-12">
-            {/* <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2> */}
-            <div className="relative -mx-4 md:-mx-8 lg:mx-0">
-              <div className="px-4 md:px-8 lg:px-0">
-                <div
-                  id="category-container"
-                  className="flex space-x-4 overflow-x-auto py-6 px-2"
-                  style={{ 
-                    scrollbarWidth: 'none', 
-                    msOverflowStyle: 'none',
-                    scrollBehavior: 'smooth',
-                    WebkitOverflowScrolling: 'touch'
-                  }}
-                >
-                  {categories.map((category) => (
-                    <div
-                      key={category.id}
-                      className="flex-none w-40 md:w-48 h-24 md:h-32 rounded-lg overflow-hidden shadow-lg cursor-pointer transition relative flex items-center justify-center"
-                      style={{
-                        backgroundImage: `url(${category.image})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-[#00000079]"></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <h3 className="font-bold text-base md:text-lg text-white text-center px-2">{category.name}</h3>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <button
-                onClick={() => scrollCategory('prev')}
-                className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
-              >
-                <ChevronLeftIcon />
-              </button>
-              
-              <button
-                onClick={() => scrollCategory('next')}
-                className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
-              >
-                <ChevronRightIcon />
-              </button>
-            </div>
-          </section>
-        </div>
+      {/* <div className="mx-auto px-4 md:px-8 lg:px-[150px] "></div> */}
 
       <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-8">
+
+        {/* Kategori */}
+        <section className="mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2>
+          <div className="relative -mx-4 md:-mx-8 lg:mx-0">
+            <div className="px-4 md:px-8 lg:px-0">
+              <div
+                id="category-container"
+                className="flex space-x-4 overflow-x-auto py-6 px-2"
+                style={{ 
+                  scrollbarWidth: 'none', 
+                  msOverflowStyle: 'none',
+                  scrollBehavior: 'smooth',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+              >
+                {categories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="flex-none w-40 md:w-48 h-24 md:h-32 rounded-lg overflow-hidden shadow-lg cursor-pointer transition relative flex items-center justify-center"
+                    style={{
+                      backgroundImage: `url(${category.image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    {/* <div className="absolute inset-0 bg-[#00000079]"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <h3 className="font-bold text-base md:text-lg text-white text-center px-2">{category.name}</h3>
+                    </div> */}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <button
+              onClick={() => scrollCategory('prev')}
+              className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+            >
+              <ChevronLeftIcon />
+            </button>
+            
+            <button
+              onClick={() => scrollCategory('next')}
+              className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+        </section>
         
 
         {/* Terdekat */}
@@ -293,7 +295,7 @@ const ArenaKita = () => {
             ))}
           </div>
           
-          <div className="text-center mt-6 md:mt-8">
+          <div className="text-center mt-6 md:mt-20">
             <button
               className="px-6 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-white hover:opacity-90 transition text-sm md:text-base"
               style={{ backgroundColor: '#f97316' }}
@@ -304,48 +306,7 @@ const ArenaKita = () => {
         </section>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-8 md:mt-16 py-8 md:py-12" style={{ backgroundColor: '#0d47a1' }}>
-        <div className="mx-auto px-4 md:px-8 lg:px-[150px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            <div>
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">ArenaKita</h3>
-              <p className="text-blue-200 text-sm md:text-base">Platform booking lapangan olahraga terpercaya di Indonesia</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Tentang Kami</h4>
-              <ul className="space-y-2 text-blue-200 text-sm md:text-base">
-                <li><a href="#" className="hover:text-white">Tentang ArenaKita</a></li>
-                <li><a href="#" className="hover:text-white">Karir</a></li>
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Bantuan</h4>
-              <ul className="space-y-2 text-blue-200 text-sm md:text-base">
-                <li><a href="#" className="hover:text-white">Pertanyaan Umum</a></li>
-                <li><a href="#" className="hover:text-white">Hubungi Kami</a></li>
-                <li><a href="#" className="hover:text-white">Syarat & Ketentuan</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Ikuti Kami</h4>
-              <ul className="space-y-2 text-blue-200 text-sm md:text-base">
-                <li><a href="#" className="hover:text-white">Instagram</a></li>
-                <li><a href="#" className="hover:text-white">Facebook</a></li>
-                <li><a href="#" className="hover:text-white">Twitter</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-blue-800 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-blue-200 text-sm md:text-base">
-            <p>&copy; 2025 ArenaKita. Hak Cipta Dilindungi.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
