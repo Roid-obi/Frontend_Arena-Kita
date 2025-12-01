@@ -51,12 +51,12 @@ export default function Navbar() {
   const { user, token, logout, isLoading } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 shadow-md" style={{ backgroundColor: "#ffffff" }}>
+    <nav className="sticky top-0 z-50 shadow-md bg-secondary" >
       <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold" style={{ color: "#0d47a1" }}>
+            <div className="text-2xl font-bold" style={{ color: "#ffff" }}>
               ArenaKita
             </div>
           </div>

@@ -242,7 +242,7 @@ const ArenaKita = () => {
                 }}
               >
                 {venues.map((venue) => (
-                  <div key={venue.id} className="flex-none w-64 md:w-72">
+                  <div key={venue.id} className="flex-none w-64 md:w-100">
                     <VenueCard venue={venue} />
                   </div>
                 ))}
@@ -275,9 +275,7 @@ const ArenaKita = () => {
           </div>
 
           <div className="text-center mt-6 md:mt-20">
-            <button className="px-6 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-white hover:opacity-90 transition text-sm md:text-base" style={{ backgroundColor: "#f97316" }}>
-              Lihat Semua Venue
-            </button>
+            <button className="px-6 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-white bg-secondary hover:opacity-90 transition text-sm md:text-base">Lihat Semua Venue</button>
           </div>
         </section>
       </div>

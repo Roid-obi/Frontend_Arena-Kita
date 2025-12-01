@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-// import Link from 'next/link';
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
-interface LoginModalProps {
+interface OwnerLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -17,7 +16,7 @@ const CloseIcon = () => (
   </svg>
 );
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function OwnerLoginModal({ isOpen, onClose }: OwnerLoginModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,12 +31,12 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setIsLoading(true);
 
     try {
-      const role = await login(email, password, "user");
+      const role = await login(email, password, "owner");
       onClose();
-      if (role === "admin") {
-        router.push("/dashboard/admin");
+      if (role === "owner") {
+        router.push("/dashboard/owner");
       } else {
-        router.push("/");
+        setError("Invalid account type. Only owner accounts can login here.");
       }
     } catch (err: unknown) {
       const message = err && typeof err === "object" && "message" in err ? (err as { message?: string }).message : undefined;
@@ -53,7 +52,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Sign in to your account</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Owner Sign In</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition" aria-label="Close modal">
             <CloseIcon />
           </button>
@@ -108,7 +107,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <p className="text-center text-sm text-gray-600">
               Dont have an account?{" "}
               <button type="button" onClick={onClose} className="font-medium text-[#0d47a1] hover:text-[#083055]">
-                Sign up
+                Contact Admin
               </button>
             </p>
           </form>

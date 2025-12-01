@@ -15,7 +15,7 @@
 
   { "id": 10, "venue_id": 6, "photo_url": "https://picsum.photos/id/1025/1200/800", "created_at": "2024-10-05T08:30:00.000Z" },
   { "id": 11, "venue_id": 6, "photo_url": "https://picsum.photos/id/1026/1200/800", "created_at": "2024-10-05T08:31:00.000Z" },
-  
+
   { "id": 12, "venue_id": 7, "photo_url": "https://picsum.photos/id/1020/1200/800", "created_at": "2024-11-12T09:00:00.000Z" },
   { "id": 13, "venue_id": 7, "photo_url": "https://picsum.photos/id/1029/1200/800", "created_at": "2024-11-12T09:01:00.000Z" },
 

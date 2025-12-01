@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="mx-auto px-4 md:px-8 lg:px-[120px] py-8">
+      <main className="mx-auto px-4 md:px-8 lg:px-[150px] py-8">
         <h1 className="text-3xl font-bold mb-4">Dashboard Admin</h1>
         <p className="text-sm text-gray-600 mb-6">Welcome back, {user.full_name} — this is the admin control panel.</p>
 

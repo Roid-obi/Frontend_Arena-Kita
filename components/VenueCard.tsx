@@ -64,7 +64,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
       </div>
 
       {/* Card Info */}
-      <div className="p-3 md:p-4">
+      <div className="p-4 md:p-5">
         <h3 className="font-bold text-base md:text-lg mb-2">{venue.name}</h3>
         <div className="flex items-center text-gray-600 mb-2">
           <div className="mr-1">
