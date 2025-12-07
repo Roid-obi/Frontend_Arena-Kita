@@ -35,7 +35,7 @@ export default function AdminUser() {
         <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari user..." />
       </div>
 
-      <div className="bg-white border rounded">
+      <div className="bg-white shadow-md rounded-lg">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

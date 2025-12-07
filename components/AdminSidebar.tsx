@@ -53,8 +53,8 @@ export default function AdminSidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:fixed md:left-0 md:top-0 md:bg-white md:border-r md:px-4 md:py-6 md:overflow-y-auto">
-        <div className="mb-6">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:fixed md:left-0 md:top-0 md:bg-white md:shadow-lg md:px-4 md:py-6 md:overflow-y-auto">
+        <div className="mb-6 mt-15">
           <h2 className="text-xl font-bold text-[#0d47a1]">Admin Dashboard</h2>
           <p className="text-sm text-gray-600">Panel administrasi</p>
         </div>

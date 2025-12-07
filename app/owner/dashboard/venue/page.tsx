@@ -124,11 +124,11 @@ export default function OwnerVenue() {
       </div>
 
       {loading ? (
-        <div className="p-4 bg-white border rounded">Memuat data venue...</div>
+        <div className="p-4 bg-white shadow-md rounded-lg">Memuat data venue...</div>
       ) : error ? (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded">{error}</div>
+        <div className="p-4 bg-red-50 text-red-700 rounded-lg shadow-sm">{error}</div>
       ) : (
-        <div className="bg-white border rounded">
+        <div className="bg-white shadow-md rounded-lg">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

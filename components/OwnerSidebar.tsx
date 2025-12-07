@@ -24,7 +24,7 @@ export default function OwnerSidebar() {
   return (
     <>
       {/* Mobile top trigger */}
-      <div className="md:hidden flex items-center justify-between bg-white border-b px-4 py-2">
+      <div className="md:hidden flex items-center justify-between bg-white shadow-md px-4 py-3">
         <button onClick={() => setOpen(!open)} className="p-2 rounded-md text-[#0d47a1]">
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -58,7 +58,7 @@ export default function OwnerSidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:fixed md:left-0 md:top-0 md:bg-white md:border-r md:px-4 md:py-6 md:overflow-y-auto">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:fixed md:left-0 md:top-0 md:bg-white md:shadow-lg md:px-4 md:py-6 md:overflow-y-auto">
         <div className="mb-6 mt-15">
           <h2 className="text-xl font-bold text-[#0d47a1]">Owner Dashboard</h2>
           <p className="text-sm text-gray-600">Kelola venue dan pesananmu</p>

@@ -2,13 +2,65 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu } from "lucide-react";
+import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
 import OwnerLoginModal from "./OwnerLoginModal";
 import Link from "next/link";
 import Logo from "@/assets/Image/Logo.png";
+
+interface User {
+  full_name?: string;
+  role?: string;
+  // Add other user properties as needed
+}
+
+function DropdownMenu({ user, isLoading, onLogout, onClose }: { user: User; isLoading: boolean; onLogout: () => void; onClose: () => void }) {
+  const pathname = usePathname();
+
+  const getDashboardPath = () => {
+    if (user?.role === "admin") return "/admin/dashboard";
+    if (user?.role === "owner") return "/owner/dashboard";
+    return "/user/dashboard";
+  };
+
+  const dashboardPath = getDashboardPath();
+  const isHome = pathname === "/";
+  const isDashboard = pathname.startsWith(dashboardPath);
+
+  return (
+    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 border border-gray-100">
+      {isLoading ? (
+        <div className="px-4 py-2 text-sm text-gray-600">Memuat...</div>
+      ) : (
+        <>
+          <div className="px-4 py-2 border-b border-gray-100">
+            <p className="text-sm font-medium text-gray-900">{user?.full_name || "Pengguna"}</p>
+            <p className="text-xs text-gray-500 capitalize">{user?.role || "user"}</p>
+          </div>
+          <Link href="/" onClick={onClose} className={`w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-3 ${isHome ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"}`}>
+            <Home size={18} />
+            <span>Home</span>
+          </Link>
+          <Link
+            href={dashboardPath}
+            onClick={onClose}
+            className={`w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-3 ${isDashboard ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"}`}
+          >
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </Link>
+          <button onClick={onLogout} className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-3 text-red-600">
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -63,41 +115,31 @@ export default function Navbar() {
                     </button>
 
                     {showProfileMenu && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                        {isLoading ? (
-                          <div className="w-48 px-4 py-2 text-sm text-gray-600">Memuat...</div>
-                        ) : (
-                          <>
-                            <button className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-2">
-                              <LayoutDashboard size={18} />
-                              <span>{user.full_name || "Dashboard"}</span>
-                            </button>
-                            <button
-                              onClick={async () => {
-                                await logout();
-                                setShowProfileMenu(false);
-                              }}
-                              className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center space-x-2"
-                            >
-                              <LogOut size={18} />
-                              <span>Keluar</span>
-                            </button>
-                          </>
-                        )}
-                      </div>
+                      <DropdownMenu
+                        user={user}
+                        isLoading={isLoading}
+                        onLogout={async () => {
+                          await logout();
+                          setShowProfileMenu(false);
+                        }}
+                        onClose={() => setShowProfileMenu(false)}
+                      />
                     )}
                   </div>
                 </>
               ) : (
                 <>
+                  <button
+                    onClick={() => setShowOwnerLoginModal(true)}
+                    className="border-2 border-[#0d47a1] hover:bg-[#0d47a1] text-[#0d47a1] hover:text-white px-4 py-[6px] rounded-md transition duration-200"
+                  >
+                    Masuk Owner
+                  </button>
                   <button onClick={() => setShowLoginModal(true)} className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200">
                     Masuk
                   </button>
                   <button onClick={() => setShowRegisterModal(true)} className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-md transition duration-200">
                     Daftar
-                  </button>
-                  <button onClick={() => setShowOwnerLoginModal(true)} className="bg-[#06b6d4] hover:bg-[#0891b2] text-white px-4 py-2 rounded-md transition duration-200">
-                    Masuk Owner
                   </button>
                 </>
               )}
@@ -142,6 +184,15 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => {
+                    setShowOwnerLoginModal(true);
+                    setShowHamburger(false);
+                  }}
+                  className="w-full block px-4 py-[6px] border-2 border-[#0d47a1] hover:bg-[#0d47a1] text-[#0d47a1] hover:text-white rounded-md transition duration-200"
+                >
+                  Masuk Owner
+                </button>
+                <button
+                  onClick={() => {
                     setShowLoginModal(true);
                     setShowHamburger(false);
                   }}
@@ -157,15 +208,6 @@ export default function Navbar() {
                   className="w-full block px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-md"
                 >
                   Daftar
-                </button>
-                <button
-                  onClick={() => {
-                    setShowOwnerLoginModal(true);
-                    setShowHamburger(false);
-                  }}
-                  className="w-full block px-4 py-2 bg-[#06b6d4] hover:bg-[#0891b2] text-white rounded-md"
-                >
-                  Masuk Owner
                 </button>
               </>
             )}

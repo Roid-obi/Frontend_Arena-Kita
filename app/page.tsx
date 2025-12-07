@@ -10,12 +10,16 @@ import venuesData from "@/data/dummy/venues.json";
 import fieldsData from "@/data/dummy/fields.json";
 import venuePhotosData from "@/data/dummy/venue_photos.json";
 import Footer from "@/components/Footer";
+import Banner1 from "../assets/image/Banner1.png";
+import Banner2 from "../assets/image/Banner2.png";
+import Banner3 from "../assets/image/Banner3.png";
+import Image from "next/image";
 
 // Dummy Data
 const banners = [
-  { id: 1, title: "Booking Lapangan Mudah", subtitle: "Temukan dan booking lapangan olahraga favoritmu", image: "https://picsum.photos/id/1018/1200/800" },
-  { id: 2, title: "Venue Terlengkap", subtitle: "Ratusan venue olahraga siap untuk kamu", image: "https://picsum.photos/id/1019/1200/800" },
-  { id: 3, title: "Harga Terjangkau", subtitle: "Dapatkan harga terbaik untuk lapangan impianmu", image: "https://picsum.photos/id/1013/1200/800" },
+  { id: 1, title: "Booking Lapangan Mudah", subtitle: "Temukan dan booking lapangan olahraga favoritmu", image: Banner1 },
+  { id: 2, title: "Venue Terlengkap", subtitle: "Ratusan venue olahraga siap untuk kamu", image: Banner2 },
+  { id: 3, title: "Harga Terjangkau", subtitle: "Dapatkan harga terbaik untuk lapangan impianmu", image: Banner3 },
   // { id: 3, title: 'Harga Terjangkau', subtitle: 'Dapatkan harga terbaik untuk lapangan impianmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Harga+Terjangkau' }
 ];
 
@@ -126,7 +130,7 @@ const ArenaKita = () => {
         <div className="relative h-64 md:h-96 overflow-hidden rounded-2xl shadow-xl">
           {banners.map((banner, index) => (
             <div key={banner.id} className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === bannerIndex ? "opacity-100" : "opacity-0"}`}>
-              <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
+              <Image src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-[#00000079] bg-opacity-40 flex items-center justify-center">
                 <div className="text-center text-white px-4">
                   <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-4">{banner.title}</h1>
