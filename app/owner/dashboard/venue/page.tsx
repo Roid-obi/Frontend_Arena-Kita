@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import SearchBar from "@/components/SearchBar";
 
 interface OwnerVenueItem {
   id: number;
@@ -21,6 +22,7 @@ export default function OwnerVenue() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -82,14 +84,22 @@ export default function OwnerVenue() {
     }
   };
 
+  // Filter venues berdasarkan search query
+  const filteredVenues = venues.filter((v) =>
+    v.venue_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.id.toString().includes(searchQuery)
+  );
+
   return (
     <section>
       <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Kelola Venue</h1>
       <p className="text-gray-600 mb-4">Kelola venue Anda dan lapangan yang terkait.</p>
 
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h2 className="sr-only">Daftar Venue</h2>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-4">
+        <div className="w-full md:w-64">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari venue..." />
         </div>
         <div>
           <Link href="/owner/dashboard/venue/new" className="inline-block px-4 py-2 bg-[#0d47a1] text-white rounded-md">
@@ -103,7 +113,7 @@ export default function OwnerVenue() {
       ) : error ? (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded">{error}</div>
       ) : (
-        <div className="overflow-auto bg-white border rounded">
+        <div className="overflow-x-auto bg-white border rounded">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -111,18 +121,20 @@ export default function OwnerVenue() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Venue</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kota</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alamat</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">GPS</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam Operasional</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {venues.map((v) => (
+              {filteredVenues.map((v) => (
                 <tr key={v.id}>
                   <td className="px-4 py-3 text-sm text-gray-700">{v.id}</td>
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">{v.venue_name}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{v.city || "-"}</td>
                   <td className="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">{v.address || "-"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">{v.gps_coordinate || "-"}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">
                     {(v.opening_time || "-").slice(0, 5)} - {(v.closing_time || "-").slice(0, 5)}
                   </td>
@@ -141,6 +153,9 @@ export default function OwnerVenue() {
               ))}
             </tbody>
           </table>
+          {filteredVenues.length === 0 && (
+            <div className="p-4 text-center text-gray-500">Tidak ada venue yang cocok dengan pencarian</div>
+          )}
         </div>
       )}
     </section>

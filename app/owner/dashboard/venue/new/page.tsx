@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function NewVenuePage() {
-  const [form, setForm] = useState({ venue_name: "", address: "", city: "", description: "", opening_time: "08:00", closing_time: "22:00" });
+  const [form, setForm] = useState({ venue_name: "", address: "", city: "", description: "", gps_coordinate: "", opening_time: "08:00", closing_time: "22:00" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -16,10 +16,14 @@ export default function NewVenuePage() {
     setLoading(true);
     setError(null);
     try {
+      // Pastikan format jam operasional "HH:mm:ss"
+      const opening_time = form.opening_time.length === 5 ? form.opening_time + ":00" : form.opening_time;
+      const closing_time = form.closing_time.length === 5 ? form.closing_time + ":00" : form.closing_time;
+      const payload = { ...form, opening_time, closing_time };
       const res = await fetch(`/api/proxy/owners/venues`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Create failed: ${res.status}`);
       const json = await res.json();
@@ -58,6 +62,10 @@ export default function NewVenuePage() {
             <label className="block text-sm">Kota</label>
             <input name="city" value={form.city} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
           </div>
+        </div>
+        <div>
+          <label className="block text-sm">Koordinat GPS (opsional)</label>
+          <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full border px-2 py-1 rounded" />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>

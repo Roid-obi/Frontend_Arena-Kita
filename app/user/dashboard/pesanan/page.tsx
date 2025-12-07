@@ -1,31 +1,72 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import SearchBar from "@/components/SearchBar";
+import bookingsData from "@/data/dummy/bookings.json";
 
 export default function DashboardPesanan() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter bookings berdasarkan search query
+  const filteredBookings = bookingsData.filter((b) =>
+    b.id.toString().includes(searchQuery) ||
+    b.venue_id.toString().includes(searchQuery) ||
+    b.booking_date.includes(searchQuery)
+  );
+
   return (
     <section>
       <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Pesanan Saya</h1>
-      <p className="text-gray-600 mb-4">Status pesanan dan riwayat pemesanan akan ditampilkan di halaman ini.</p>
+      <p className="text-gray-600 mb-4">Status pesanan dan riwayat pemesanan.</p>
 
-      <div className="space-y-4">
-        <div className="p-4 border rounded-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">Pesanan #1234</h3>
-              <p className="text-sm text-gray-600">Lapangan: Lapangan A • 2025-12-03 • 10:00</p>
-            </div>
-            <div className="text-sm font-semibold text-green-600">Konfirmasi</div>
-          </div>
-        </div>
+      <div className="mb-4 w-full md:w-64">
+        <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari pesanan..." />
+      </div>
 
-        <div className="p-4 border rounded-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">Pesanan #1229</h3>
-              <p className="text-sm text-gray-600">Lapangan: Lapangan B • 2025-11-28 • 18:00</p>
-            </div>
-            <div className="text-sm font-semibold text-yellow-600">Menunggu Pembayaran</div>
-          </div>
-        </div>
+      <div className="overflow-x-auto bg-white border rounded">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredBookings.map((b) => (
+              <tr key={b.id}>
+                <td className="px-4 py-3 text-sm text-gray-700">{b.id}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{b.venue_id}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{b.booking_date}</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{b.booking_time}</td>
+                <td className="px-4 py-3 text-sm">
+                  <span
+                    className={`inline-block px-2 py-1 text-xs font-medium rounded ${
+                      b.status === "confirmed"
+                        ? "bg-green-100 text-green-800"
+                        : b.status === "pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {b.status === "confirmed" ? "Dikonfirmasi" : b.status === "pending" ? "Menunggu" : "Dibatalkan"}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-sm text-right">
+                  <div className="inline-flex items-center gap-2">
+                    <button className="px-3 py-1 bg-[#0d47a1] text-white rounded text-sm">Detail</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filteredBookings.length === 0 && (
+          <div className="p-4 text-center text-gray-500">Tidak ada pesanan yang cocok dengan pencarian</div>
+        )}
       </div>
     </section>
   );
