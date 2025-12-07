@@ -47,9 +47,10 @@ export default function OwnerVenueDetail() {
         } else {
           setError(json.message || "Gagal memuat detail");
         }
-      } catch (e: any) {
-        console.error(e);
-        setError(e.message || "Terjadi kesalahan saat memuat detail");
+      } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error(String(e));
+        console.error(error);
+        setError(error.message || "Terjadi kesalahan saat memuat detail");
       } finally {
         setLoading(false);
       }
@@ -77,9 +78,10 @@ export default function OwnerVenueDetail() {
       } else {
         alert(json.message || "Gagal update");
       }
-    } catch (e: any) {
-      console.error(e);
-      alert(e.message || "Gagal update");
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error(error);
+      alert(error.message || "Gagal update");
     }
   };
 
@@ -95,9 +97,10 @@ export default function OwnerVenueDetail() {
       } else {
         alert(json.message || "Gagal menghapus");
       }
-    } catch (e: any) {
-      console.error(e);
-      alert(e.message || "Gagal menghapus");
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error(error);
+      alert(error.message || "Gagal menghapus");
     }
   };
 

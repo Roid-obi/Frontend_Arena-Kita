@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 async function getTokenFromCookie(req: Request) {
   const cookieHeader = req.headers.get("cookie") || "";
@@ -9,8 +10,7 @@ async function getTokenFromCookie(req: Request) {
 
   return tokenCookie ? tokenCookie.split("=")[1] : null;
 }
-
-export async function GET(req: Request, _ctx: any) {
+export async function GET(req: Request, _ctx: { params: { id: string } }) {
   try {
     const token = await getTokenFromCookie(req);
     if (!token) {
@@ -44,13 +44,12 @@ export async function GET(req: Request, _ctx: any) {
       }
       return NextResponse.json({ status: "error", message: text || "Backend error" }, { status: res.status });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Proxy GET /:id error", err);
-    return NextResponse.json({ status: "error", message: err.message || "Proxy error" }, { status: 500 });
+    return NextResponse.json({ status: "error", message: err instanceof Error ? err.message : "Proxy error" }, { status: 500 });
   }
 }
-
-export async function PUT(req: Request, _ctx: any) {
+export async function PUT(req: Request, _ctx: { params: { id: string } }) {
   try {
     const token = await getTokenFromCookie(req);
     if (!token) return NextResponse.json({ status: "error", message: "Token tidak ditemukan" }, { status: 401 });
@@ -71,13 +70,12 @@ export async function PUT(req: Request, _ctx: any) {
     });
     const text = await res.text();
     return new NextResponse(text, { status: res.status, headers: { "content-type": res.headers.get("content-type") || "application/json" } });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Proxy PUT /:id error", err);
-    return NextResponse.json({ status: "error", message: err.message || "Proxy PUT error" }, { status: 500 });
+    return NextResponse.json({ status: "error", message: err instanceof Error ? err.message : "Proxy PUT error" }, { status: 500 });
   }
 }
-
-export async function DELETE(req: Request, _ctx: any) {
+export async function DELETE(req: Request, _ctx: { params: { id: string } }) {
   try {
     const token = await getTokenFromCookie(req);
     if (!token) return NextResponse.json({ status: "error", message: "Token tidak ditemukan" }, { status: 401 });
@@ -92,8 +90,8 @@ export async function DELETE(req: Request, _ctx: any) {
     });
     const text = await res.text();
     return new NextResponse(text, { status: res.status, headers: { "content-type": res.headers.get("content-type") || "application/json" } });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Proxy DELETE /:id error", err);
-    return NextResponse.json({ status: "error", message: err.message || "Proxy DELETE error" }, { status: 500 });
+    return NextResponse.json({ status: "error", message: err instanceof Error ? err.message : "Proxy DELETE error" }, { status: 500 });
   }
 }

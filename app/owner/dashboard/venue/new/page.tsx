@@ -28,9 +28,9 @@ export default function NewVenuePage() {
       } else {
         setError(json.message || "Gagal membuat venue");
       }
-    } catch (e: any) {
+    } catch (e: Error | unknown) {
       console.error(e);
-      setError(e.message || "Terjadi kesalahan");
+      setError(e instanceof Error ? e.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }

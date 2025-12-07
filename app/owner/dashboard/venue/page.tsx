@@ -48,9 +48,9 @@ export default function OwnerVenue() {
         } else {
           setError(json.message || "Gagal memuat data");
         }
-      } catch (e: any) {
+      } catch (e: Error | unknown) {
         console.error(e);
-        setError(e.message || "Terjadi kesalahan saat memuat data");
+        setError((e instanceof Error ? e.message : String(e)) || "Terjadi kesalahan saat memuat data");
       } finally {
         setLoading(false);
       }
@@ -74,9 +74,9 @@ export default function OwnerVenue() {
       } else {
         throw new Error(json?.message || "Gagal menghapus");
       }
-    } catch (e: any) {
+    } catch (e: Error | unknown) {
       console.error(e);
-      alert(e.message || "Gagal menghapus venue");
+      alert((e instanceof Error ? e.message : String(e)) || "Gagal menghapus venue");
     } finally {
       setDeletingId(null);
     }

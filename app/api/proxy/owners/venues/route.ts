@@ -35,9 +35,10 @@ export async function GET(req: Request) {
         "content-type": res.headers.get("content-type") || "application/json",
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Proxy error:", err);
-    return NextResponse.json({ status: "error", message: err.message || "Proxy error" }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : "Proxy error";
+    return NextResponse.json({ status: "error", message: errorMessage }, { status: 500 });
   }
 }
 
@@ -76,8 +77,9 @@ export async function POST(req: Request) {
         "content-type": res.headers.get("content-type") || "application/json",
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Proxy POST error:", err);
-    return NextResponse.json({ status: "error", message: err.message || "Proxy POST error" }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : "Proxy POST error";
+    return NextResponse.json({ status: "error", message: errorMessage }, { status: 500 });
   }
 }
