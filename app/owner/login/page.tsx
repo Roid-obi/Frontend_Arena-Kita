@@ -13,7 +13,7 @@ export default function OwnerLoginPage() {
   useEffect(() => {
     if (!authLoading && user) {
       if (user.role === "owner") {
-        router.push("/dashboard/owner");
+        router.push("/owner/dashboard");
       } else {
         router.push("/login");
       }

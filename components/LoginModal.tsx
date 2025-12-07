@@ -35,7 +35,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       const role = await login(email, password, "user");
       onClose();
       if (role === "admin") {
-        router.push("/dashboard/admin");
+        router.push("/admin/dashboard");
       } else {
         router.push("/");
       }

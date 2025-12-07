@@ -3,25 +3,13 @@ import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
 import venuesData from "@/data/dummy/venues.json";
 import fieldsData from "@/data/dummy/fields.json";
 import venuePhotosData from "@/data/dummy/venue_photos.json";
 import Footer from "@/components/Footer";
-
-// SVG Icons Components
-const ChevronLeftIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6"></polyline>
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6"></polyline>
-  </svg>
-);
 
 // Dummy Data
 const banners = [
@@ -83,19 +71,19 @@ const ArenaKita = () => {
   const router = useRouter();
 
   // Jika user yang sedang login adalah admin, langsung arahkan ke dashboard admin
-  useEffect(() => {
-    try {
-      const role = Cookies.get("userRole");
-      // Jika admin -> dashboard admin, jika owner -> dashboard owner
-      if (role === "admin") {
-        router.push("/dashboard/admin");
-      } else if (role === "owner") {
-        router.push("/dashboard/owner");
-      }
-    } catch {
-      // ignore
-    }
-  }, [router]);
+  // useEffect(() => {
+  //   try {
+  //     const role = Cookies.get("userRole");
+  //     // Jika admin -> dashboard admin, jika owner -> dashboard owner
+  //     if (role === "admin") {
+  //       router.push("/dashboard/admin");
+  //     } else if (role === "owner") {
+  //       router.push("/dashboard/owner");
+  //     }
+  //   } catch {
+  //     // ignore
+  //   }
+  // }, [router]);
 
   const nextBanner = () => {
     if (!isTransitioning) {
@@ -149,11 +137,11 @@ const ArenaKita = () => {
           ))}
 
           <button onClick={prevBanner} className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 p-1 md:p-2 rounded-full bg-white bg-opacity-50 hover:bg-opacity-75 transition">
-            <ChevronLeftIcon />
+            <ChevronLeft size={32} />
           </button>
 
           <button onClick={nextBanner} className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 p-1 md:p-2 rounded-full bg-white bg-opacity-50 hover:bg-opacity-75 transition">
-            <ChevronRightIcon />
+            <ChevronRight size={32} />
           </button>
 
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
@@ -214,14 +202,14 @@ const ArenaKita = () => {
               onClick={() => scrollCategory("prev")}
               className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
             >
-              <ChevronLeftIcon />
+              <ChevronLeft size={24} />
             </button>
 
             <button
               onClick={() => scrollCategory("next")}
               className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
             >
-              <ChevronRightIcon />
+              <ChevronRight size={24} />
             </button>
           </div>
         </section>
@@ -253,14 +241,14 @@ const ArenaKita = () => {
               onClick={() => scrollVenue("prev")}
               className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
             >
-              <ChevronLeftIcon />
+              <ChevronLeft size={24} />
             </button>
 
             <button
               onClick={() => scrollVenue("next")}
               className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
             >
-              <ChevronRightIcon />
+              <ChevronRight size={24} />
             </button>
           </div>
         </section>

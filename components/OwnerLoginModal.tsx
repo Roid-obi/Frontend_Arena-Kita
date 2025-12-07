@@ -34,7 +34,7 @@ export default function OwnerLoginModal({ isOpen, onClose }: OwnerLoginModalProp
       const role = await login(email, password, "owner");
       onClose();
       if (role === "owner") {
-        router.push("/dashboard/owner");
+        router.push("/owner/dashboard");
       } else {
         setError("Invalid account type. Only owner accounts can login here.");
       }
