@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
 interface OwnerVenueItem {
   id: number;
@@ -19,6 +20,7 @@ export default function OwnerVenue() {
   const [venues, setVenues] = useState<OwnerVenueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -57,10 +59,44 @@ export default function OwnerVenue() {
     fetchVenues();
   }, []);
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Hapus venue ini? Tindakan tidak dapat dibatalkan.")) return;
+    try {
+      setDeletingId(id);
+      const res = await fetch(`/api/proxy/owners/venues/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Delete failed: ${res.status} ${text}`);
+      }
+      const json = await res.json();
+      if (json?.status === "success") {
+        setVenues((prev) => prev.filter((v) => v.id !== id));
+      } else {
+        throw new Error(json?.message || "Gagal menghapus");
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message || "Gagal menghapus venue");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <section>
       <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Kelola Venue</h1>
       <p className="text-gray-600 mb-4">Kelola venue Anda dan lapangan yang terkait.</p>
+
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h2 className="sr-only">Daftar Venue</h2>
+        </div>
+        <div>
+          <Link href="/owner/dashboard/venue/new" className="inline-block px-4 py-2 bg-[#0d47a1] text-white rounded-md">
+            Tambah Venue
+          </Link>
+        </div>
+      </div>
 
       {loading ? (
         <div className="p-4 bg-white border rounded">Memuat data venue...</div>
@@ -93,8 +129,12 @@ export default function OwnerVenue() {
                   <td className="px-4 py-3 text-sm text-gray-700">{v.owner?.full_name || "-"}</td>
                   <td className="px-4 py-3 text-sm text-right">
                     <div className="inline-flex items-center gap-2">
-                      <button className="px-3 py-1 rounded bg-[#0d47a1] text-white text-sm">Kelola</button>
-                      <button className="px-3 py-1 rounded bg-[#f97316] text-white text-sm">Lihat Fields</button>
+                      <Link href={`/owner/dashboard/venue/${v.id}`} className="px-3 py-1 rounded bg-white border text-[#0d47a1] text-sm">
+                        Lihat
+                      </Link>
+                      <button onClick={() => handleDelete(v.id)} disabled={deletingId === v.id} className="px-3 py-1 rounded bg-red-500 text-white text-sm">
+                        {deletingId === v.id ? "Menghapus..." : "Hapus"}
+                      </button>
                     </div>
                   </td>
                 </tr>
