@@ -8,9 +8,5 @@ interface TableWrapperProps {
 }
 
 export default function TableWrapper({ children, className = "" }: TableWrapperProps) {
-  return (
-    <div className={`overflow-x-auto bg-white border rounded ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`overflow-x-auto bg-white border rounded ${className}`}>{children}</div>;
 }

@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { User, ClipboardList, Grid, Settings, Menu, X } from "lucide-react";
 
 export default function OwnerSidebar() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   const menu = [
     { href: "/owner/dashboard", label: "Info Umum", icon: User },
@@ -13,6 +15,11 @@ export default function OwnerSidebar() {
     { href: "/owner/dashboard/venue", label: "Kelola Venue", icon: Grid },
     { href: "/owner/dashboard/account", label: "Akun", icon: Settings },
   ];
+
+  const isActive = (href: string) => {
+    if (href === "/owner/dashboard") return pathname === href;
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -32,8 +39,14 @@ export default function OwnerSidebar() {
             <nav className="space-y-2">
               {menu.map((m) => {
                 const Icon = m.icon;
+                const active = isActive(m.href);
                 return (
-                  <Link key={m.href} href={m.href} className="flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-100 text-[#0d47a1] font-medium" onClick={() => setOpen(false)}>
+                  <Link
+                    key={m.href}
+                    href={m.href}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-md font-medium ${active ? "bg-[#0d47a1] text-white" : "hover:bg-gray-100 text-[#0d47a1]"}`}
+                    onClick={() => setOpen(false)}
+                  >
                     <Icon size={18} />
                     <span>{m.label}</span>
                   </Link>
@@ -45,8 +58,8 @@ export default function OwnerSidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:h-[80vh] md:sticky md:top-0 md:bg-white md:border-r md:px-4 md:py-6">
-        <div className="mb-6">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:fixed md:left-0 md:top-0 md:bg-white md:border-r md:px-4 md:py-6 md:overflow-y-auto">
+        <div className="mb-6 mt-15">
           <h2 className="text-xl font-bold text-[#0d47a1]">Owner Dashboard</h2>
           <p className="text-sm text-gray-600">Kelola venue dan pesananmu</p>
         </div>
@@ -54,9 +67,10 @@ export default function OwnerSidebar() {
         <nav className="flex-1 space-y-2">
           {menu.map((m) => {
             const Icon = m.icon;
+            const active = isActive(m.href);
             return (
-              <Link key={m.href} href={m.href} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-800">
-                <Icon size={18} className="text-[#0d47a1]" />
+              <Link key={m.href} href={m.href} className={`flex items-center gap-3 px-3 py-2 rounded-md ${active ? "bg-[#0d47a1] text-white" : "hover:bg-gray-100 text-gray-800"}`}>
+                <Icon size={18} className={active ? "text-white" : "text-[#0d47a1]"} />
                 <span className="font-medium">{m.label}</span>
               </Link>
             );
