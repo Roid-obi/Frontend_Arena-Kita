@@ -6,9 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
-import venuesData from "@/data/dummy/venues.json";
 import fieldsData from "@/data/dummy/fields.json";
-import venuePhotosData from "@/data/dummy/venue_photos.json";
 import Footer from "@/components/Footer";
 import Banner1 from "../assets/image/Banner1.png";
 import Banner2 from "../assets/image/Banner2.png";
@@ -20,7 +18,6 @@ const banners = [
   { id: 1, title: "Booking Lapangan Mudah", subtitle: "Temukan dan booking lapangan olahraga favoritmu", image: Banner1 },
   { id: 2, title: "Venue Terlengkap", subtitle: "Ratusan venue olahraga siap untuk kamu", image: Banner2 },
   { id: 3, title: "Harga Terjangkau", subtitle: "Dapatkan harga terbaik untuk lapangan impianmu", image: Banner3 },
-  // { id: 3, title: 'Harga Terjangkau', subtitle: 'Dapatkan harga terbaik untuk lapangan impianmu', image: 'https://placehold.co/1200x400/0d47a1/ffffff?text=Harga+Terjangkau' }
 ];
 
 // Extract unique sport types from fields data to create categories
@@ -32,62 +29,82 @@ const categories = Array.from(
         id: fieldsData.findIndex((f) => f.sport_type === field.sport_type) + 1,
         name: field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase(),
         icon: "⚽",
-        // image: field.field_photo_url,
         image: `https://placehold.co/300x200/0d47a1/ffffff?text=${field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase()}`,
       },
     ])
   ).values()
 );
 
-// Transform venues data to match component structure
-interface VenuePhoto {
+interface VenueAPI {
   id: number;
-  venue_id: number;
-  photo_url: string;
+  owner_id: number;
+  venue_name: string;
+  description: string;
+  address: string;
+  city: string;
+  gps_coordinate: string | null;
+  opening_time: string | null;
+  closing_time: string | null;
   created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  owner: {
+    id: number;
+    full_name: string;
+    email: string;
+    role: string;
+  };
 }
-
-const getVenueImages = (venueId: number) => {
-  return venuePhotosData.filter((photo: VenuePhoto) => photo.venue_id === venueId).map((photo: VenuePhoto) => photo.photo_url);
-};
-
-const venues = venuesData.slice(0, 5).map((venue) => ({
-  id: venue.id,
-  name: venue.venue_name,
-  location: venue.city,
-  hours: `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}`,
-  images: getVenueImages(venue.id),
-  category: "Olahraga",
-}));
-
-// Use all venues as recommendations
-const recommendations = venuesData.map((venue) => ({
-  id: venue.id,
-  name: venue.venue_name,
-  location: venue.city,
-  hours: `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}`,
-  images: getVenueImages(venue.id),
-}));
 
 const ArenaKita = () => {
   const [bannerIndex, setBannerIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [venues, setVenues] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Jika user yang sedang login adalah admin, langsung arahkan ke dashboard admin
-  // useEffect(() => {
-  //   try {
-  //     const role = Cookies.get("userRole");
-  //     // Jika admin -> dashboard admin, jika owner -> dashboard owner
-  //     if (role === "admin") {
-  //       router.push("/dashboard/admin");
-  //     } else if (role === "owner") {
-  //       router.push("/dashboard/owner");
-  //     }
-  //   } catch {
-  //     // ignore
-  //   }
-  // }, [router]);
+  // Fetch venues from API
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/venues");
+        const result = await response.json();
+
+        if (result.status === "success" && result.data) {
+          const venuesData: VenueAPI[] = result.data;
+
+          // Transform API data to match component structure
+          const transformedVenues = venuesData.slice(0, 5).map((venue) => ({
+            id: venue.id,
+            name: venue.venue_name,
+            location: venue.city,
+            hours: venue.opening_time && venue.closing_time ? `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}` : "Hubungi Venue",
+            images: [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
+            category: "Olahraga",
+          }));
+
+          const transformedRecommendations = venuesData.map((venue) => ({
+            id: venue.id,
+            name: venue.venue_name,
+            location: venue.city,
+            hours: venue.opening_time && venue.closing_time ? `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}` : "Hubungi Venue",
+            images: [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
+          }));
+
+          setVenues(transformedVenues);
+          setRecommendations(transformedRecommendations);
+        }
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenues();
+  }, []);
 
   const nextBanner = () => {
     if (!isTransitioning) {
@@ -221,50 +238,62 @@ const ArenaKita = () => {
         {/* Terdekat */}
         <section className="mb-8 md:mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
-          <div className="relative -mx-4 md:-mx-8 lg:mx-0">
-            <div className="px-4 md:px-8 lg:px-0">
-              <div
-                id="venue-container"
-                className="flex space-x-4 overflow-x-auto py-6 px-2"
-                style={{
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                  scrollBehavior: "smooth",
-                  WebkitOverflowScrolling: "touch",
-                }}
-              >
-                {venues.map((venue) => (
-                  <div key={venue.id} className="flex-none w-64 md:w-100">
-                    <VenueCard venue={venue} />
-                  </div>
-                ))}
-              </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Memuat venue...</p>
             </div>
+          ) : (
+            <div className="relative -mx-4 md:-mx-8 lg:mx-0">
+              <div className="px-4 md:px-8 lg:px-0">
+                <div
+                  id="venue-container"
+                  className="flex space-x-4 overflow-x-auto py-6 px-2"
+                  style={{
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                    scrollBehavior: "smooth",
+                    WebkitOverflowScrolling: "touch",
+                  }}
+                >
+                  {venues.map((venue) => (
+                    <div key={venue.id} className="flex-none w-64 md:w-100">
+                      <VenueCard venue={venue} />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-            <button
-              onClick={() => scrollVenue("prev")}
-              className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
-            >
-              <ChevronLeft size={24} />
-            </button>
+              <button
+                onClick={() => scrollVenue("prev")}
+                className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+              >
+                <ChevronLeft size={24} />
+              </button>
 
-            <button
-              onClick={() => scrollVenue("next")}
-              className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
-            >
-              <ChevronRight size={24} />
-            </button>
-          </div>
+              <button
+                onClick={() => scrollVenue("next")}
+                className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Rekomendasi */}
         <section className="mb-8 md:mb-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Rekomendasi Venue</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {recommendations.map((venue) => (
-              <VenueCard key={venue.id} venue={venue} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Memuat rekomendasi...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {recommendations.map((venue) => (
+                <VenueCard key={venue.id} venue={venue} />
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-6 md:mt-20">
             <button className="px-6 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-white bg-secondary hover:opacity-90 transition text-sm md:text-base">Lihat Semua Venue</button>
