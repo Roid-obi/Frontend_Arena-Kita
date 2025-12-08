@@ -50,7 +50,9 @@ export default function DashboardPesanan() {
                 <tr key={b.id}>
                   <td className="px-4 py-3 text-sm text-gray-700">{b.id}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{b.booking_date}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{b.start_time} - {b.end_time}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {b.start_time} - {b.end_time}
+                  </td>
                   <td className="px-4 py-3 text-sm text-gray-700">Rp {b.total_price.toLocaleString("id-ID")}</td>
                   <td className="px-4 py-3 text-sm">
                     <span

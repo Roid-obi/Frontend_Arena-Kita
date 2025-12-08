@@ -9,7 +9,7 @@ import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
 import OwnerLoginModal from "./OwnerLoginModal";
 import Link from "next/link";
-import Logo from "@/assets/Image/Logo.png";
+import Logo from "@/assets/image/Logo.png";
 
 interface User {
   full_name?: string;
