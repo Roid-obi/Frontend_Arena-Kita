@@ -18,8 +18,10 @@ interface ProfileData {
   deleted_at: string | null;
 }
 
+const PLACEHOLDER_AVATAR = "https://ui-avatars.com/api/?name=User&background=0d47a1&color=fff";
+
 const getImageUrl = (url: string | null): string => {
-  if (!url) return "";
+  if (!url) return PLACEHOLDER_AVATAR;
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
@@ -202,11 +204,16 @@ export default function DashboardAccount() {
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="relative">
-            {profile?.profile_photo_url || previewUrl ? (
-              <Image src={previewUrl || getImageUrl(profile?.profile_photo_url || null) || ""} alt="Profile" width={80} height={80} className="w-20 h-20 rounded-full object-cover" />
-            ) : (
-              <div className="w-20 h-20 bg-[#0d47a1] rounded-full flex items-center justify-center text-white text-2xl font-bold">{profile?.full_name?.charAt(0).toUpperCase() || "U"}</div>
-            )}
+            <Image
+              src={previewUrl || getImageUrl(profile?.profile_photo_url || null)}
+              alt="Profile"
+              width={80}
+              height={80}
+              className="w-20 h-20 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = PLACEHOLDER_AVATAR;
+              }}
+            />
             {isEditing && (
               <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 p-1.5 bg-[#0d47a1] text-white rounded-full hover:bg-[#083055] transition">
                 <Camera size={16} />

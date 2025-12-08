@@ -13,6 +13,7 @@ export default function OwnerSidebar() {
     { href: "/owner/dashboard", label: "Info Umum", icon: User },
     { href: "/owner/dashboard/pesanan", label: "Pesanan Masuk", icon: ClipboardList },
     { href: "/owner/dashboard/venue", label: "Kelola Venue", icon: Grid },
+    { href: "/owner/dashboard/fields", label: "Kelola Lapangan", icon: Grid },
     { href: "/owner/dashboard/account", label: "Akun", icon: Settings },
   ];
 

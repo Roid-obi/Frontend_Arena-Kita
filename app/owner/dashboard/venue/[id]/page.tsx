@@ -24,7 +24,7 @@ interface Field {
   name: string;
   type: string;
   status: string;
-  photo_url: string;
+  photoUrl: string | null;
 }
 
 export default function OwnerVenueDetail() {
@@ -36,7 +36,7 @@ export default function OwnerVenueDetail() {
   const [fields, setFields] = useState<Field[]>([]);
   const [fieldsLoading, setFieldsLoading] = useState(false);
   const [showAddField, setShowAddField] = useState(false);
-  const [fieldForm, setFieldForm] = useState({ name: "", type: "" });
+  const [fieldForm, setFieldForm] = useState({ field_name: "", sport_type: "" });
   const [fieldPhoto, setFieldPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [addingField, setAddingField] = useState(false);
@@ -87,7 +87,14 @@ export default function OwnerVenueDetail() {
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const json = await res.json();
         if (json?.status === "success") {
-          setFields(json.data || []);
+          const mapped: Field[] = (json.data || []).map((f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
+            id: f.id,
+            name: f.field_name ?? f.name ?? "Tanpa Nama",
+            type: f.sport_type ?? f.type ?? "-",
+            status: f.status ?? "-",
+            photoUrl: f.field_photo_url ?? f.photo_url ?? null,
+          }));
+          setFields(mapped);
         }
       } catch (e: unknown) {
         console.error("Error fetching fields:", e);
@@ -165,64 +172,70 @@ export default function OwnerVenueDetail() {
   };
 
   const handleAddField = async () => {
-    if (!fieldForm.name || !fieldForm.type) {
+    if (!fieldForm.field_name || !fieldForm.sport_type) {
       alert("Nama dan tipe lapangan harus diisi!");
       return;
     }
+
+    const buildFormData = (includePhoto: boolean) => {
+      const formData = new FormData();
+      formData.append("field_name", fieldForm.field_name);
+      formData.append("sport_type", fieldForm.sport_type.toLowerCase());
+      if (includePhoto && fieldPhoto) {
+        formData.append("field_photo", fieldPhoto);
+      }
+      return formData;
+    };
+
+    const attemptPost = async (includePhoto: boolean) => {
+      const res = await fetch(`/api/proxy/owners/venues/${id}/fields`, {
+        method: "POST",
+        body: buildFormData(includePhoto),
+      });
+      const json = await res.json();
+      return { res, json };
+    };
 
     setAddingField(true);
     try {
       if (!id) return;
 
-      // Gunakan FormData untuk upload file
-      const formData = new FormData();
-      formData.append("name", fieldForm.name);
-      formData.append("type", fieldForm.type);
-      if (fieldPhoto) {
-        // Coba berbagai nama field untuk file
-        formData.append("photo", fieldPhoto);
-        formData.append("field_photo", fieldPhoto);
+      const firstTry = await attemptPost(true);
+      let success = firstTry.res.ok && firstTry.json?.status === "success";
+      let payload = firstTry.json;
+
+      // Jika gagal karena foto, coba ulang tanpa foto
+      if (!success && fieldPhoto) {
+        console.warn("Upload dengan foto gagal, mencoba tanpa foto...");
+        const secondTry = await attemptPost(false);
+        success = secondTry.res.ok && secondTry.json?.status === "success";
+        payload = secondTry.json;
       }
 
-      // Log detail FormData
-      console.log("=== Frontend FormData ===");
-      console.log("name:", fieldForm.name);
-      console.log("type:", fieldForm.type);
-      console.log("photo:", fieldPhoto ? `${fieldPhoto.name} (${fieldPhoto.type}, ${fieldPhoto.size} bytes)` : "none");
-
-      const res = await fetch(`/api/proxy/owners/venues/${id}/fields`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const json = await res.json();
-
-      console.log("=== Response ===");
-      console.log("Status:", res.status);
-      console.log("JSON:", json);
-
-      if (!res.ok) {
-        console.error("Error response:", json);
-        // Menampilkan detail error dari backend
-        const errorMsg = json.details || json.message || `Add field failed: ${res.status}`;
-        throw new Error(errorMsg);
+      if (!success) {
+        const msg = payload?.message || `Gagal menambahkan lapangan (status ${firstTry.res.status})`;
+        throw new Error(msg);
       }
 
-      if (json?.status === "success") {
-        // Refresh daftar fields
-        const fieldsRes = await fetch(`/api/proxy/owners/venues/${id}/fields`);
-        const fieldsJson = await fieldsRes.json();
-        if (fieldsJson?.status === "success") {
-          setFields(fieldsJson.data || []);
-        }
-        setFieldForm({ name: "", type: "" });
-        setFieldPhoto(null);
-        setPhotoPreview(null);
-        setShowAddField(false);
-        alert("Lapangan berhasil ditambahkan!");
-      } else {
-        alert(json.message || "Gagal menambahkan lapangan");
+      // Refresh daftar fields
+      const fieldsRes = await fetch(`/api/proxy/owners/venues/${id}/fields`);
+      const fieldsJson = await fieldsRes.json();
+      if (fieldsJson?.status === "success") {
+        const mapped: Field[] = (fieldsJson.data || []).map((f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
+          id: f.id,
+          name: f.field_name ?? f.name ?? "Tanpa Nama",
+          type: f.sport_type ?? f.type ?? "-",
+          status: f.status ?? "-",
+          photoUrl: f.field_photo_url ?? f.photo_url ?? null,
+        }));
+        setFields(mapped);
       }
+
+      setFieldForm({ field_name: "", sport_type: "" });
+      setFieldPhoto(null);
+      setPhotoPreview(null);
+      setShowAddField(false);
+      alert("Lapangan berhasil ditambahkan!");
     } catch (e: unknown) {
       const error = e instanceof Error ? e : new Error(String(e));
       console.error("handleAddField error:", error);
@@ -328,19 +341,19 @@ export default function OwnerVenueDetail() {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium mb-1">Nama Lapangan *</label>
-                <input name="name" value={fieldForm.name} onChange={handleFieldChange} placeholder="Contoh: Lapangan A" className="w-full border px-3 py-2 rounded" />
+                <input name="field_name" value={fieldForm.field_name} onChange={handleFieldChange} placeholder="Contoh: Lapangan Futsal A" className="w-full border px-3 py-2 rounded" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Tipe Lapangan *</label>
-                <select name="type" value={fieldForm.type} onChange={handleFieldChange} className="w-full border px-3 py-2 rounded">
+                <select name="sport_type" value={fieldForm.sport_type} onChange={handleFieldChange} className="w-full border px-3 py-2 rounded">
                   <option value="">Pilih Tipe</option>
-                  <option value="Futsal">Futsal</option>
-                  <option value="Basket">Basket</option>
-                  <option value="Voli">Voli</option>
-                  <option value="Badminton">Badminton</option>
-                  <option value="Tenis">Tenis</option>
-                  <option value="Padel">Padel</option>
-                  <option value="Lainnya">Lainnya</option>
+                  <option value="futsal">Futsal</option>
+                  <option value="basket">Basket</option>
+                  <option value="voli">Voli</option>
+                  <option value="badminton">Badminton</option>
+                  <option value="tenis">Tenis</option>
+                  <option value="padel">Padel</option>
+                  <option value="lainnya">Lainnya</option>
                 </select>
               </div>
               <div>
@@ -360,7 +373,7 @@ export default function OwnerVenueDetail() {
                 <button
                   onClick={() => {
                     setShowAddField(false);
-                    setFieldForm({ name: "", type: "" });
+                    setFieldForm({ field_name: "", sport_type: "" });
                     setFieldPhoto(null);
                     setPhotoPreview(null);
                   }}
@@ -381,28 +394,22 @@ export default function OwnerVenueDetail() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {fields.map((field) => {
-              // Konversi photo_url menjadi URL storage yang benar
-              let displayPhotoUrl = field.photo_url;
-              if (field.photo_url && !field.photo_url.startsWith("http")) {
-                displayPhotoUrl = `https://dev.api.arenakita.my.id/storage/field_photo/${field.photo_url}`;
+              const FIELD_PLACEHOLDER = "https://via.placeholder.com/400x300?text=Field+Photo";
+              let displayPhotoUrl = field.photoUrl || FIELD_PLACEHOLDER;
+              if (field.photoUrl && !field.photoUrl.startsWith("http")) {
+                displayPhotoUrl = `https://dev.api.arenakita.my.id/storage/field_photo/${field.photoUrl}`;
               }
 
               return (
                 <div key={field.id} className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
-                  {displayPhotoUrl ? (
-                    <img
-                      src={displayPhotoUrl}
-                      alt={field.name}
-                      className="w-full h-40 object-cover rounded mb-3"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300?text=No+Image";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-40 bg-gray-200 rounded mb-3 flex items-center justify-center">
-                      <span className="text-gray-500">Tidak ada foto</span>
-                    </div>
-                  )}
+                  <img
+                    src={displayPhotoUrl}
+                    alt={field.name}
+                    className="w-full h-40 object-cover rounded mb-3"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = FIELD_PLACEHOLDER;
+                    }}
+                  />
                   <h3 className="font-semibold text-lg mb-1">{field.name}</h3>
                   <p className="text-sm text-gray-600 mb-1">Tipe: {field.type}</p>
                   <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>

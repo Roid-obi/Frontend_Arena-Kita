@@ -96,16 +96,28 @@ export default function OwnerPesanan() {
 
   const getStatusColor = (status: string) => {
     const statusLower = status.toLowerCase();
-    if (statusLower === "confirmed") return "bg-green-100 text-green-800";
-    if (statusLower === "pending") return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
+    if (statusLower.includes("pembayaran")) return "bg-blue-100 text-blue-800";
+    if (statusLower.includes("konfirmasi")) return "bg-yellow-100 text-yellow-800";
+    if (statusLower.includes("terkonfirmasi")) return "bg-green-100 text-green-800";
+    if (statusLower.includes("selesai")) return "bg-emerald-100 text-emerald-800";
+    if (statusLower.includes("gagal")) return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
   };
 
   const getStatusLabel = (status: string) => {
     const statusLower = status.toLowerCase();
-    if (statusLower === "confirmed") return "Dikonfirmasi";
-    if (statusLower === "pending") return "Menunggu";
-    return "Dibatalkan";
+    if (statusLower.includes("pembayaran")) return "Menunggu Pembayaran";
+    if (statusLower.includes("konfirmasi")) return "Menunggu Konfirmasi";
+    if (statusLower.includes("terkonfirmasi")) return "Terkonfirmasi";
+    if (statusLower.includes("selesai")) return "Selesai";
+    if (statusLower.includes("gagal")) return "Pesanan Gagal";
+    return status;
+  };
+
+  const handleStatusChange = async (bookingId: number, newStatus: string) => {
+    // TODO: Implementasikan API call untuk mengubah status
+    // const response = await fetch(`/api/proxy/owners/bookings/${bookingId}/status`, {...})
+    console.log(`Mengubah status booking ${bookingId} menjadi ${newStatus}`);
   };
 
   return (
@@ -138,6 +150,7 @@ export default function OwnerPesanan() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -160,13 +173,51 @@ export default function OwnerPesanan() {
                       <td className="px-4 py-3 text-sm">
                         <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(b.status)}`}>{getStatusLabel(b.status)}</span>
                       </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex gap-1 flex-wrap">
+                          {!getStatusLabel(b.status).includes("Selesai") && !getStatusLabel(b.status).includes("Gagal") && (
+                            <>
+                              {getStatusLabel(b.status).includes("Menunggu Pembayaran") && (
+                                <>
+                                  <button onClick={() => handleStatusChange(b.id, "confirmed")} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
+                                    Terima
+                                  </button>
+                                  <button onClick={() => handleStatusChange(b.id, "failed")} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                    Tolak
+                                  </button>
+                                </>
+                              )}
+                              {getStatusLabel(b.status).includes("Menunggu Konfirmasi") && (
+                                <>
+                                  <button onClick={() => handleStatusChange(b.id, "confirmed")} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
+                                    Konfirmasi
+                                  </button>
+                                  <button onClick={() => handleStatusChange(b.id, "failed")} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                    Tolak
+                                  </button>
+                                </>
+                              )}
+                              {getStatusLabel(b.status).includes("Terkonfirmasi") && (
+                                <button onClick={() => handleStatusChange(b.id, "completed")} className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                                  Selesaikan
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Detail</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {filteredBookings.length === 0 && <div className="p-4 text-center text-gray-500">Tidak ada pesanan yang cocok dengan pencarian</div>}
             </div>
-            {filteredBookings.length > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
+            {filteredBookings.length > 0 && filteredBookings.length > itemsPerPage && (
+              <div className="px-4 py-3 border-t border-gray-200">
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              </div>
+            )}
           </>
         )}
       </div>

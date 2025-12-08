@@ -69,6 +69,15 @@ export default function Navbar() {
   const [showOwnerLoginModal, setShowOwnerLoginModal] = useState(false);
   const [showHamburger, setShowHamburger] = useState(false);
   const { user, token, logout, isLoading } = useAuth();
+  const pathname = usePathname();
+
+  const getDashboardPath = () => {
+    if (user?.role === "admin") return "/admin/dashboard";
+    if (user?.role === "owner") return "/owner/dashboard";
+    return "/user/dashboard";
+  };
+
+  const dashboardPath = getDashboardPath();
 
   return (
     <nav className="sticky top-0 z-50 shadow-md bg-white relative">
@@ -161,16 +170,46 @@ export default function Navbar() {
           <div className="px-4 py-4 space-y-3">
             {user && token ? (
               <>
-                <button className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3">
+                <Link
+                  href="/"
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${pathname === "/" ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"}`}
+                >
+                  <Home size={20} />
+                  <span>Home</span>
+                </Link>
+                <Link
+                  href={dashboardPath}
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${
+                    pathname.startsWith(dashboardPath) ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"
+                  }`}
+                >
+                  <LayoutDashboard size={20} />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/user/dashboard/pesanan"
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${
+                    pathname.includes("/pesanan") ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"
+                  }`}
+                >
                   <ShoppingCart size={20} />
-                  <span>Keranjang</span>
-                </button>
-                <button className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3" onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                  <span>Keranjang / Pesanan</span>
+                </Link>
+                <Link
+                  href="/user/dashboard/account"
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${
+                    pathname.includes("/account") ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"
+                  }`}
+                >
                   <User size={20} />
                   <span>Profil</span>
-                </button>
+                </Link>
                 <button
-                  className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3"
+                  className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 text-red-600"
                   onClick={async () => {
                     await logout();
                     setShowHamburger(false);
