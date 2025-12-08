@@ -19,9 +19,9 @@ export default function AdminPesanan() {
   const endIndex = startIndex + itemsPerPage;
   const currentBookings = filteredBookings.slice(startIndex, endIndex);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
+  // useEffect(() => {
+  //   setCurrentPage(1);
+  // }, [searchQuery]);
 
   return (
     <section>
