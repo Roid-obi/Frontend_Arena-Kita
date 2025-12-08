@@ -10,17 +10,14 @@ async function getTokenFromCookie(req: Request) {
 
   return tokenCookie ? tokenCookie.split("=")[1] : null;
 }
-export async function GET(req: Request, _ctx: { params: { id: string } }) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await ctx.params;
     const token = await getTokenFromCookie(req);
     if (!token) {
       console.warn("Proxy GET missing token");
       return NextResponse.json({ status: "error", message: "Token tidak ditemukan" }, { status: 401 });
     }
-
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split("/").filter(Boolean);
-    const id = pathParts[pathParts.length - 1];
 
     const backendUrl = `https://dev.api.arenakita.my.id/api/v1/owners/venues/${encodeURIComponent(id)}`;
     const maskedToken = token ? `${token.slice(0, 8)}...(${token.length} chars)` : null;
@@ -49,13 +46,11 @@ export async function GET(req: Request, _ctx: { params: { id: string } }) {
     return NextResponse.json({ status: "error", message: err instanceof Error ? err.message : "Proxy error" }, { status: 500 });
   }
 }
-export async function PUT(req: Request, _ctx: { params: { id: string } }) {
+export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await ctx.params;
     const token = await getTokenFromCookie(req);
     if (!token) return NextResponse.json({ status: "error", message: "Token tidak ditemukan" }, { status: 401 });
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split("/").filter(Boolean);
-    const id = pathParts[pathParts.length - 1];
 
     const backendUrl = `https://dev.api.arenakita.my.id/api/v1/owners/venues/${encodeURIComponent(id)}`;
     const body = await req.text();
@@ -75,13 +70,11 @@ export async function PUT(req: Request, _ctx: { params: { id: string } }) {
     return NextResponse.json({ status: "error", message: err instanceof Error ? err.message : "Proxy PUT error" }, { status: 500 });
   }
 }
-export async function DELETE(req: Request, _ctx: { params: { id: string } }) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await ctx.params;
     const token = await getTokenFromCookie(req);
     if (!token) return NextResponse.json({ status: "error", message: "Token tidak ditemukan" }, { status: 401 });
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split("/").filter(Boolean);
-    const id = pathParts[pathParts.length - 1];
 
     const backendUrl = `https://dev.api.arenakita.my.id/api/v1/owners/venues/${encodeURIComponent(id)}`;
     const res = await fetch(backendUrl, {

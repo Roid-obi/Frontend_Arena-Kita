@@ -11,7 +11,7 @@ export default function AdminPesanan() {
   const itemsPerPage = 5;
 
   // Filter bookings berdasarkan search query
-  const filteredBookings = bookingsData.filter((b) => b.id.toString().includes(searchQuery) || b.user_id.toString().includes(searchQuery) || b.venue_id.toString().includes(searchQuery));
+  const filteredBookings = bookingsData.filter((b) => b.id.toString().includes(searchQuery) || b.user_id.toString().includes(searchQuery));
 
   // Pagination logic
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -39,9 +39,8 @@ export default function AdminPesanan() {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue ID</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
               </tr>
@@ -51,16 +50,15 @@ export default function AdminPesanan() {
                 <tr key={b.id}>
                   <td className="px-4 py-3 text-sm text-gray-700">{b.id}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{b.user_id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{b.venue_id}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{b.booking_date}</td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{b.booking_time}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{b.start_time} - {b.end_time}</td>
                   <td className="px-4 py-3 text-sm">
                     <span
                       className={`inline-block px-2 py-1 text-xs font-medium rounded ${
-                        b.status === "confirmed" ? "bg-green-100 text-green-800" : b.status === "pending" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
+                        b.booking_status === "confirmed" ? "bg-green-100 text-green-800" : b.booking_status === "pending" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {b.status === "confirmed" ? "Dikonfirmasi" : b.status === "pending" ? "Menunggu" : "Dibatalkan"}
+                      {b.booking_status === "confirmed" ? "Dikonfirmasi" : b.booking_status === "pending" ? "Menunggu" : "Dibatalkan"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-right">

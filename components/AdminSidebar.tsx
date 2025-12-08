@@ -30,7 +30,7 @@ export default function AdminSidebar() {
       {open && (
         <div className="md:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-full bg-white p-4 overflow-auto">
+          <div className="absolute inset-y-0 left-0 w-full bg-white p-4 overflow-auto mt-[57vh]">
             <nav className="space-y-2">
               {menu.map((m) => {
                 const Icon = m.icon;

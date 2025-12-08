@@ -54,7 +54,7 @@ export default function AdminUser() {
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">{u.full_name}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{u.email}</td>
                   <td className="px-4 py-3 text-sm">
-                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">{u.role || "user"}</span>
+                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">user</span>
                   </td>
                   <td className="px-4 py-3 text-sm text-right">
                     <div className="inline-flex items-center gap-2">
