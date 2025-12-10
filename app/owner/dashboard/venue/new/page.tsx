@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function NewVenuePage() {
   const [form, setForm] = useState({ venue_name: "", address: "", city: "", description: "", gps_coordinate: "", opening_time: "08:00", closing_time: "22:00" });
@@ -16,13 +17,23 @@ export default function NewVenuePage() {
     setLoading(true);
     setError(null);
     try {
+      const token = Cookies.get("token");
+      if (!token) {
+        setError("Token tidak ditemukan. Silakan login kembali.");
+        setLoading(false);
+        return;
+      }
       // Pastikan format jam operasional "HH:mm:ss"
       const opening_time = form.opening_time.length === 5 ? form.opening_time + ":00" : form.opening_time;
       const closing_time = form.closing_time.length === 5 ? form.closing_time + ":00" : form.closing_time;
       const payload = { ...form, opening_time, closing_time };
-      const res = await fetch(`/api/proxy/owners/venues`, {
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Create failed: ${res.status}`);

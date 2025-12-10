@@ -39,8 +39,12 @@ export default function OwnerVenue() {
           return;
         }
 
-        // Call local proxy to avoid CORS / preflight redirect issues
-        const res = await fetch("/api/proxy/owners/venues");
+        const res = await fetch("https://dev.api.arenakita.my.id/api/v1/owners/venues", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
 
         if (!res.ok) {
           const errText = await res.text();
@@ -68,7 +72,18 @@ export default function OwnerVenue() {
     if (!confirm("Hapus venue ini? Tindakan tidak dapat dibatalkan.")) return;
     try {
       setDeletingId(id);
-      const res = await fetch(`/api/proxy/owners/venues/${id}`, { method: "DELETE" });
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`Delete failed: ${res.status} ${text}`);

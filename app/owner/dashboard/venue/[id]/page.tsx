@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Cookies from "js-cookie";
 
 interface VenueDetail {
   id: number;
@@ -50,7 +51,18 @@ export default function OwnerVenueDetail() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/proxy/owners/venues/${id}`);
+        const token = Cookies.get("token");
+        if (!token) {
+          setError("Token tidak ditemukan. Silakan login kembali.");
+          setLoading(false);
+          return;
+        }
+        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const json = await res.json();
         if (json?.status === "success") {
@@ -83,17 +95,26 @@ export default function OwnerVenueDetail() {
       if (!id) return;
       setFieldsLoading(true);
       try {
-        const res = await fetch(`/api/proxy/owners/venues/${id}/fields`);
+        const token = Cookies.get("token");
+        if (!token) return;
+        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/fields`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const json = await res.json();
         if (json?.status === "success") {
-          const mapped: Field[] = (json.data || []).map((f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
-            id: f.id,
-            name: f.field_name ?? f.name ?? "Tanpa Nama",
-            type: f.sport_type ?? f.type ?? "-",
-            status: f.status ?? "-",
-            photoUrl: f.field_photo_url ?? f.photo_url ?? null,
-          }));
+          const mapped: Field[] = (json.data || []).map(
+            (f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
+              id: f.id,
+              name: f.field_name ?? f.name ?? "Tanpa Nama",
+              type: f.sport_type ?? f.type ?? "-",
+              status: f.status ?? "-",
+              photoUrl: f.field_photo_url ?? f.photo_url ?? null,
+            })
+          );
           setFields(mapped);
         }
       } catch (e: unknown) {
@@ -112,13 +133,22 @@ export default function OwnerVenueDetail() {
   const handleSave = async () => {
     try {
       if (!id) return;
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
       // Pastikan format jam operasional "HH:mm:ss"
       const opening_time = form.opening_time.length === 5 ? form.opening_time + ":00" : form.opening_time;
       const closing_time = form.closing_time.length === 5 ? form.closing_time + ":00" : form.closing_time;
       const payload = { ...form, opening_time, closing_time };
-      const res = await fetch(`/api/proxy/owners/venues/${id}`, {
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Update failed: ${res.status}`);
@@ -140,7 +170,18 @@ export default function OwnerVenueDetail() {
     if (!confirm("Hapus venue ini? Tindakan tidak dapat dibatalkan.")) return;
     try {
       if (!id) return;
-      const res = await fetch(`/api/proxy/owners/venues/${id}`, { method: "DELETE" });
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
       if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
       const json = await res.json();
       if (json?.status === "success") {
@@ -188,8 +229,14 @@ export default function OwnerVenueDetail() {
     };
 
     const attemptPost = async (includePhoto: boolean) => {
-      const res = await fetch(`/api/proxy/owners/venues/${id}/fields`, {
+      const token = Cookies.get("token");
+      if (!token) throw new Error("Token tidak ditemukan");
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/fields`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
         body: buildFormData(includePhoto),
       });
       const json = await res.json();
@@ -218,16 +265,24 @@ export default function OwnerVenueDetail() {
       }
 
       // Refresh daftar fields
-      const fieldsRes = await fetch(`/api/proxy/owners/venues/${id}/fields`);
+      const token = Cookies.get("token");
+      const fieldsRes = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/fields`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
       const fieldsJson = await fieldsRes.json();
       if (fieldsJson?.status === "success") {
-        const mapped: Field[] = (fieldsJson.data || []).map((f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
-          id: f.id,
-          name: f.field_name ?? f.name ?? "Tanpa Nama",
-          type: f.sport_type ?? f.type ?? "-",
-          status: f.status ?? "-",
-          photoUrl: f.field_photo_url ?? f.photo_url ?? null,
-        }));
+        const mapped: Field[] = (fieldsJson.data || []).map(
+          (f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
+            id: f.id,
+            name: f.field_name ?? f.name ?? "Tanpa Nama",
+            type: f.sport_type ?? f.type ?? "-",
+            status: f.status ?? "-",
+            photoUrl: f.field_photo_url ?? f.photo_url ?? null,
+          })
+        );
         setFields(mapped);
       }
 
