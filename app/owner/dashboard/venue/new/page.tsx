@@ -57,35 +57,35 @@ export default function NewVenuePage() {
       <form onSubmit={handleSubmit} className="space-y-4 bg-white p-4 border rounded">
         {error && <div className="text-red-600">{error}</div>}
         <div>
-          <label className="block text-sm">Nama Venue</label>
-          <input name="venue_name" value={form.venue_name} onChange={handleChange} className="w-full border px-2 py-1 rounded" required />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nama Venue</label>
+          <input name="venue_name" value={form.venue_name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" required />
         </div>
         <div>
-          <label className="block text-sm">Deskripsi</label>
-          <textarea name="description" value={form.description} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+          <textarea name="description" value={form.description} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" rows={3} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
-            <label className="block text-sm">Alamat</label>
-            <input name="address" value={form.address} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+            <input name="address" value={form.address} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
           </div>
           <div>
-            <label className="block text-sm">Kota</label>
-            <input name="city" value={form.city} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+            <input name="city" value={form.city} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
           </div>
         </div>
         <div>
-          <label className="block text-sm">Koordinat GPS (opsional)</label>
-          <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full border px-2 py-1 rounded" />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Koordinat GPS (opsional)</label>
+          <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-sm">Buka</label>
-            <input type="time" name="opening_time" value={form.opening_time} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Buka</label>
+            <input type="time" name="opening_time" value={form.opening_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
           </div>
           <div>
-            <label className="block text-sm">Tutup</label>
-            <input type="time" name="closing_time" value={form.closing_time} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tutup</label>
+            <input type="time" name="closing_time" value={form.closing_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
           </div>
         </div>
         <div className="flex gap-2">

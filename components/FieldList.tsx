@@ -49,6 +49,11 @@ interface FieldListProps {
 export default function FieldList({ fields, bookings, pricingSchemes = [] }: FieldListProps) {
   const [expandedFieldId, setExpandedFieldId] = useState<number | null>(null);
 
+  const getFieldPhotoUrl = (url: string) => {
+    if (url.startsWith('http')) return url;
+    return `https://dev.api.arenakita.my.id/storage/${url}`;
+  };
+
   const getAvailableTimeSlots = (fieldId: number): string[] => {
     const fieldBookings = bookings.filter((booking) => booking.pricing_scheme_id === fieldId && booking.booking_status === "CONFIRMED");
 
@@ -100,8 +105,8 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                 {/* Field Card Header with Image on Left */}
                 <div className="flex flex-col md:flex-row">
                   {/* Field Image */}
-                  <div className="relative w-full md:w-48 h-40 md:h-auto bg-gray-100 flex-shrink-0">
-                    <Image src={field.field_photo_url} alt={field.field_name} fill className="object-cover" />
+                  <div className="relative w-full md:w-48 h-40 md:h-auto bg-gray-100 shrink-0">
+                    <Image src={getFieldPhotoUrl(field.field_photo_url)} alt={field.field_name} fill className="object-cover" />
                   </div>
 
                   {/* Field Info */}

@@ -31,10 +31,15 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
     setCurrentIndex((prev) => (prev + 1) % photos.length);
   };
 
+  const getPhotoUrl = (url: string) => {
+    if (url.startsWith('http')) return url;
+    return `https://dev.api.arenakita.my.id/storage/${url}`;
+  };
+
   return (
     <div className="relative w-full h-48 sm:h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden group">
       {/* Main Image */}
-      <Image src={photos[currentIndex].photo_url} alt={`Venue photo ${currentIndex + 1}`} fill className="object-cover" priority />
+      <Image src={getPhotoUrl(photos[currentIndex].photo_url)} alt={`Venue photo ${currentIndex + 1}`} fill className="object-cover" priority />
 
       {/* Previous Button */}
       {photos.length > 1 && (

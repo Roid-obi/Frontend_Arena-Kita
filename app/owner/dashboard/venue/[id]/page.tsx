@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from "js-cookie";
+import { Pencil, Trash2, X, Save, PlusCircle } from "lucide-react";
 
 interface VenueDetail {
   id: number;
@@ -309,11 +310,28 @@ export default function OwnerVenueDetail() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-[#0d47a1]">{venue.venue_name}</h1>
         <div className="flex gap-2">
-          <button onClick={() => setEditing(!editing)} className="px-3 py-1 rounded bg-[#0d47a1] text-white">
-            {editing ? "Batal" : "Edit"}
+          <button
+            onClick={() => setEditing(!editing)}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+          >
+            {editing ? (
+              <>
+                <X size={14} />
+                <span>Batal</span>
+              </>
+            ) : (
+              <>
+                <Pencil size={14} />
+                <span>Edit</span>
+              </>
+            )}
           </button>
-          <button onClick={handleDelete} className="px-3 py-1 rounded bg-red-500 text-white">
-            Hapus
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
+          >
+            <Trash2 size={14} />
+            <span>Hapus</span>
           </button>
         </div>
       </div>
@@ -330,51 +348,63 @@ export default function OwnerVenueDetail() {
           {venue.created_at && <p className="text-xs text-gray-500">Dibuat: {new Date(venue.created_at).toLocaleString("id-ID")}</p>}
           {venue.updated_at && <p className="text-xs text-gray-500">Diperbarui: {new Date(venue.updated_at).toLocaleString("id-ID")}</p>}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
-            {(venue.venue_photo || []).map((p) => (
-              <img key={p.id} src={p.photo_url} alt="photo" className="w-full h-40 object-cover rounded" />
-            ))}
+            {(venue.venue_photo || []).map((p) => {
+              const photoUrl = p.photo_url.startsWith('http') ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`;
+              return (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={p.id} src={photoUrl} alt="photo" className="w-full h-40 object-cover rounded" />
+              );
+            })}
           </div>
         </div>
       ) : (
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium">Nama Venue</label>
-            <input name="venue_name" value={form.venue_name} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nama Venue</label>
+            <input name="venue_name" value={form.venue_name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium">Deskripsi</label>
-            <textarea name="description" value={form.description} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+            <textarea name="description" value={form.description} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" rows={3} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-medium">Alamat</label>
-              <input name="address" value={form.address} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+              <input name="address" value={form.address} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
             </div>
             <div>
-              <label className="block text-sm font-medium">Kota</label>
-              <input name="city" value={form.city} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+              <input name="city" value={form.city} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium">Koordinat GPS (opsional)</label>
-            <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full border px-2 py-1 rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Koordinat GPS (opsional)</label>
+            <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-medium">Buka</label>
-              <input name="opening_time" type="time" value={form.opening_time} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Buka</label>
+              <input name="opening_time" type="time" value={form.opening_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
             </div>
             <div>
-              <label className="block text-sm font-medium">Tutup</label>
-              <input name="closing_time" type="time" value={form.closing_time} onChange={handleChange} className="w-full border px-2 py-1 rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tutup</label>
+              <input name="closing_time" type="time" value={form.closing_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSave} className="px-4 py-2 bg-[#0d47a1] text-white rounded">
-              Simpan
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055]"
+            >
+              <Save size={16} />
+              <span>Simpan</span>
             </button>
-            <button onClick={() => setEditing(false)} className="px-4 py-2 bg-gray-200 rounded">
-              Batal
+            <button
+              onClick={() => setEditing(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              <X size={16} />
+              <span>Batal</span>
             </button>
           </div>
         </div>
@@ -384,8 +414,21 @@ export default function OwnerVenueDetail() {
       <div className="mt-8 pt-8 border-t">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-[#0d47a1]">Daftar Lapangan</h2>
-          <button onClick={() => setShowAddField(!showAddField)} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-            {showAddField ? "Batal" : "Tambah Lapangan"}
+          <button
+            onClick={() => setShowAddField(!showAddField)}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] text-sm"
+          >
+            {showAddField ? (
+              <>
+                <X size={16} />
+                <span>Batal</span>
+              </>
+            ) : (
+              <>
+                <PlusCircle size={16} />
+                <span>Tambah Lapangan</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -395,12 +438,12 @@ export default function OwnerVenueDetail() {
             <h3 className="font-semibold mb-3">Tambah Lapangan Baru</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Nama Lapangan *</label>
-                <input name="field_name" value={fieldForm.field_name} onChange={handleFieldChange} placeholder="Contoh: Lapangan Futsal A" className="w-full border px-3 py-2 rounded" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lapangan *</label>
+                <input name="field_name" value={fieldForm.field_name} onChange={handleFieldChange} placeholder="Contoh: Lapangan Futsal A" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Tipe Lapangan *</label>
-                <select name="sport_type" value={fieldForm.sport_type} onChange={handleFieldChange} className="w-full border px-3 py-2 rounded">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Lapangan *</label>
+                <select name="sport_type" value={fieldForm.sport_type} onChange={handleFieldChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm">
                   <option value="">Pilih Tipe</option>
                   <option value="futsal">Futsal</option>
                   <option value="basket">Basket</option>
@@ -412,18 +455,24 @@ export default function OwnerVenueDetail() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Foto Lapangan (opsional)</label>
-                <input type="file" accept="image/*" onChange={handlePhotoChange} className="w-full border px-3 py-2 rounded" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Foto Lapangan (opsional)</label>
+                <input type="file" accept="image/*" onChange={handlePhotoChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
                 {photoPreview && (
                   <div className="mt-2">
                     <p className="text-xs text-gray-600 mb-1">Preview:</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={photoPreview} alt="preview" className="w-full h-40 object-cover rounded" />
                   </div>
                 )}
               </div>
               <div className="flex gap-2">
-                <button onClick={handleAddField} disabled={addingField} className="px-4 py-2 bg-[#0d47a1] text-white rounded hover:bg-blue-800 disabled:bg-gray-400">
-                  {addingField ? "Menambahkan..." : "Simpan Lapangan"}
+                <button
+                  onClick={handleAddField}
+                  disabled={addingField}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save size={16} />
+                  <span>{addingField ? "Menambahkan..." : "Simpan Lapangan"}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -432,9 +481,10 @@ export default function OwnerVenueDetail() {
                     setFieldPhoto(null);
                     setPhotoPreview(null);
                   }}
-                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
                 >
-                  Batal
+                  <X size={16} />
+                  <span>Batal</span>
                 </button>
               </div>
             </div>
@@ -456,18 +506,23 @@ export default function OwnerVenueDetail() {
               }
 
               return (
-                <div key={field.id} className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
-                  <img
-                    src={displayPhotoUrl}
-                    alt={field.name}
-                    className="w-full h-40 object-cover rounded mb-3"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = FIELD_PLACEHOLDER;
-                    }}
-                  />
-                  <h3 className="font-semibold text-lg mb-1">{field.name}</h3>
-                  <p className="text-sm text-gray-600 mb-1">Tipe: {field.type}</p>
-                  <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+                <div key={field.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-100">
+                  <div className="w-full h-40 bg-gray-100 relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={displayPhotoUrl}
+                      alt={field.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = FIELD_PLACEHOLDER;
+                      }}
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{field.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2">Tipe: {field.type}</p>
+                    <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+                  </div>
                 </div>
               );
             })}

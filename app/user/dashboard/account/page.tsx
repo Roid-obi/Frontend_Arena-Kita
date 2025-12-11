@@ -25,7 +25,7 @@ const getImageUrl = (url: string | null): string => {
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
-  return `https://dev.api.arenakita.my.id/${url}`;
+  return `https://dev.api.arenakita.my.id/storage/${url}`;
 };
 
 export default function DashboardAccount() {
