@@ -61,6 +61,8 @@ const ArenaKita = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [venues, setVenues] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recPage, setRecPage] = useState(1);
+  const recPerPage = 9;
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -95,6 +97,7 @@ const ArenaKita = () => {
 
           setVenues(transformedVenues);
           setRecommendations(transformedRecommendations);
+          setRecPage(1);
         }
       } catch (error) {
         console.error("Error fetching venues:", error);
@@ -138,13 +141,31 @@ const ArenaKita = () => {
     }
   };
 
+  const totalRecPages = Math.max(1, Math.ceil(recommendations.length / recPerPage));
+  const paginatedRecommendations = recommendations.slice((recPage - 1) * recPerPage, recPage * recPerPage);
+
+  const handleRecPageChange = (page: number) => {
+    const next = Math.min(Math.max(page, 1), totalRecPages);
+    setRecPage(next);
+    const section = document.getElementById("rekomendasi-section");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  useEffect(() => {
+    if (recPage > totalRecPages) {
+      setRecPage(totalRecPages);
+    }
+  }, [recPage, totalRecPages]);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
       <Navbar />
 
       {/* Banner Carousel */}
       <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-8">
-        <div className="relative h-64 md:h-96 overflow-hidden rounded-2xl shadow-xl">
+        <div className="relative h-64 md:h-96 overflow-hidden rounded-2xl shadow-xl group">
           {banners.map((banner, index) => (
             <div key={banner.id} className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === bannerIndex ? "opacity-100" : "opacity-0"}`}>
               <Image src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
@@ -157,12 +178,18 @@ const ArenaKita = () => {
             </div>
           ))}
 
-          <button onClick={prevBanner} className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 p-1 md:p-2 rounded-full bg-white bg-opacity-50 hover:bg-opacity-75 transition">
-            <ChevronLeft size={32} />
+          <button
+            onClick={prevBanner}
+            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white p-1 md:p-2 rounded-full z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ChevronLeft size={24} className="sm:w-6 sm:h-6" />
           </button>
 
-          <button onClick={nextBanner} className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 p-1 md:p-2 rounded-full bg-white bg-opacity-50 hover:bg-opacity-75 transition">
-            <ChevronRight size={32} />
+          <button
+            onClick={nextBanner}
+            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white p-1 md:p-2 rounded-full z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ChevronRight size={24} className="sm:w-6 sm:h-6" />
           </button>
 
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
@@ -187,12 +214,12 @@ const ArenaKita = () => {
       <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-8">
         {/* Kategori */}
         <section className="mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
           <div className="relative -mx-4 md:-mx-8 lg:mx-0">
-            <div className="px-4 md:px-8 lg:px-0">
+            <div className="px-0 md:px-8 lg:px-0">
               <div
                 id="category-container"
-                className="flex space-x-4 overflow-x-auto py-6 px-2"
+                className="flex space-x-4 overflow-x-auto px-2 pb-6"
                 style={{
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
@@ -247,7 +274,7 @@ const ArenaKita = () => {
               <div className="px-4 md:px-8 lg:px-0">
                 <div
                   id="venue-container"
-                  className="flex space-x-4 overflow-x-auto py-6 px-2"
+                  className="flex space-x-4 overflow-x-auto px-2 pb-6"
                   style={{
                     scrollbarWidth: "none",
                     msOverflowStyle: "none",
@@ -281,23 +308,57 @@ const ArenaKita = () => {
         </section>
 
         {/* Rekomendasi */}
-        <section className="mb-8 md:mb-12">
+        <section id="rekomendasi-section" className="">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Rekomendasi Venue</h2>
           {loading ? (
             <div className="text-center py-12">
               <p className="text-gray-600">Memuat rekomendasi...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {recommendations.map((venue) => (
-                <VenueCard key={venue.id} venue={venue} />
-              ))}
-            </div>
-          )}
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {paginatedRecommendations.map((venue) => (
+                  <VenueCard key={venue.id} venue={venue} />
+                ))}
+              </div>
 
-          <div className="text-center mt-6 md:mt-20">
-            <button className="px-6 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-white bg-secondary hover:opacity-90 transition text-sm md:text-base">Lihat Semua Venue</button>
-          </div>
+              {recommendations.length > recPerPage && (
+                <div className="mt-10 md:mt-20 flex items-center justify-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => handleRecPageChange(recPage - 1)}
+                    disabled={recPage === 1}
+                    className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-700 hover:bg-[#0d47a1] hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  {Array.from({ length: totalRecPages }).map((_, idx) => {
+                    const page = idx + 1;
+                    const isActive = page === recPage;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handleRecPageChange(page)}
+                        className={`min-w-[40px] h-10 px-3 rounded-full border text-sm font-semibold transition shadow-sm ${
+                          isActive ? "bg-[#0d47a1] text-white border-[#0d47a1]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => handleRecPageChange(recPage + 1)}
+                    disabled={recPage === totalRecPages}
+                    className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-700 hover:bg-[#0d47a1] hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </section>
       </div>
 

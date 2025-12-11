@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home } from "lucide-react";
+import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import LoginModal from "./LoginModal";
@@ -156,8 +156,8 @@ export default function Navbar() {
 
             {/* Mobile hamburger */}
             <div className="md:hidden">
-              <button onClick={() => setShowHamburger(!showHamburger)} className="p-2 rounded-md text-[#0d47a1]">
-                <Menu size={24} />
+              <button onClick={() => setShowHamburger(!showHamburger)} className="p-2 rounded-md text-[#0d47a1] transition">
+                {showHamburger ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function Navbar() {
 
       {/* Mobile Hamburger Menu (full width content) */}
       {showHamburger && (
-        <div className="md:hidden w-full bg-white border-t shadow-lg">
+        <div className="md:hidden w-full bg-white border-t border-gray-200 shadow-lg">
           <div className="px-4 py-4 space-y-3">
             {user && token ? (
               <>

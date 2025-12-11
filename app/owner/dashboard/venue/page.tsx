@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
+import { PlusCircle, Eye, Trash2, MapPin, Clock } from "lucide-react";
 
 interface OwnerVenueItem {
   id: number;
@@ -25,7 +26,9 @@ export default function OwnerVenue() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 9;
+
+  const PLACEHOLDER_IMG = "https://via.placeholder.com/400x300/0d47a1/ffffff?text=Venue+Photo";
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -124,70 +127,77 @@ export default function OwnerVenue() {
 
   return (
     <section>
-      <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Kelola Venue</h1>
-      <p className="text-gray-600 mb-4">Kelola venue Anda dan lapangan yang terkait.</p>
+      <div className="flex flex-col gap-2 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1]">Kelola Venue</h1>
+        <p className="text-gray-600">Kelola venue Anda dan lapangan yang terkait.</p>
+      </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="w-full md:w-64">
           <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari venue..." />
         </div>
-        <div>
-          <Link href="/owner/dashboard/venue/new" className="inline-block px-4 py-2 bg-[#0d47a1] text-white rounded-md">
-            Tambah Venue
-          </Link>
-        </div>
+        <Link href="/owner/dashboard/venue/new" className="inline-flex items-center gap-2 px-3 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] text-sm">
+          <PlusCircle size={16} />
+          <span>Tambah Venue</span>
+        </Link>
       </div>
 
       {loading ? (
-        <div className="p-4 bg-white shadow-md rounded-lg">Memuat data venue...</div>
+        <div className="bg-white rounded-xl shadow-md p-8 text-center text-gray-600">Memuat data venue...</div>
       ) : error ? (
-        <div className="p-4 bg-red-50 text-red-700 rounded-lg shadow-sm">{error}</div>
+        <div className="bg-red-50 text-red-700 rounded-xl shadow-sm p-6 border border-red-200">{error}</div>
+      ) : currentVenues.length === 0 ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center text-gray-600">Tidak ada venue yang cocok dengan pencarian</div>
       ) : (
-        <div className="bg-white shadow-md rounded-lg">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Venue</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kota</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alamat</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">GPS</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam Operasional</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentVenues.map((v) => (
-                  <tr key={v.id}>
-                    <td className="px-4 py-3 text-sm text-gray-700">{v.id}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">{v.venue_name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{v.city || "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">{v.address || "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">{v.gps_coordinate || "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
-                      {(v.opening_time || "-").slice(0, 5)} - {(v.closing_time || "-").slice(0, 5)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{v.owner?.full_name || "-"}</td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      <div className="inline-flex items-center gap-2">
-                        <Link href={`/owner/dashboard/venue/${v.id}`} className="px-3 py-1 rounded bg-white border text-[#0d47a1] text-sm">
-                          Lihat
-                        </Link>
-                        <button onClick={() => handleDelete(v.id)} disabled={deletingId === v.id} className="px-3 py-1 rounded bg-red-500 text-white text-sm">
-                          {deletingId === v.id ? "Menghapus..." : "Hapus"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredVenues.length === 0 && <div className="p-4 text-center text-gray-500">Tidak ada venue yang cocok dengan pencarian</div>}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {currentVenues.map((v) => (
+              <div key={v.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-100">
+                <div className="w-full h-40 bg-gray-100 relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={PLACEHOLDER_IMG}
+                    alt={v.venue_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = PLACEHOLDER_IMG;
+                    }}
+                  />
+                </div>
+                <div className="p-4 space-y-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{v.venue_name}</h3>
+                    {v.description && <p className="text-sm text-gray-600 mb-2 line-clamp-1">{v.description}</p>}
+                  </div>
+
+                  <p className="text-sm text-gray-600">Lokasi: {v.city || "-"}</p>
+                  <p className="text-xs text-gray-500">
+                    Jam: {(v.opening_time || "-").slice(0, 5)} - {(v.closing_time || "-").slice(0, 5)}
+                  </p>
+
+                  <div className="flex gap-2 pt-2">
+                    <Link href={`/owner/dashboard/venue/${v.id}`} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
+                      <Eye size={14} /> Lihat
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(v.id)}
+                      disabled={deletingId === v.id}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 size={14} /> {deletingId === v.id ? "..." : "Hapus"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          {filteredVenues.length > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
-        </div>
+
+          {filteredVenues.length > itemsPerPage && (
+            <div className="mt-4">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+          )}
+        </>
       )}
     </section>
   );

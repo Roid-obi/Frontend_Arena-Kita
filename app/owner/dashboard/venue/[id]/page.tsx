@@ -452,7 +452,7 @@ export default function OwnerVenueDetail() {
               const FIELD_PLACEHOLDER = "https://via.placeholder.com/400x300?text=Field+Photo";
               let displayPhotoUrl = field.photoUrl || FIELD_PLACEHOLDER;
               if (field.photoUrl && !field.photoUrl.startsWith("http")) {
-                displayPhotoUrl = `https://dev.api.arenakita.my.id/storage/field_photo/${field.photoUrl}`;
+                displayPhotoUrl = `https://dev.api.arenakita.my.id/storage/${field.photoUrl}`;
               }
 
               return (

@@ -86,17 +86,17 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 md:space-y-8">
-      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Daftar Lapangan</h3>
+    <div className="space-y-4 md:space-y-6">
+      <h3 className="text-2xl md:text-3xl font-bold text-[#1a1a1a]">Daftar Lapangan</h3>
 
       {fields && fields.length > 0 ? (
-        <div className="grid gap-4">
+        <div className="grid gap-4 md:gap-6">
           {fields.map((field) => {
             const pricing = getFieldPricing(field.id);
             const minPrice = pricing.length > 0 ? Math.min(...pricing.map((p) => p.price)) : 0;
 
             return (
-              <div key={field.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-white">
+              <div key={field.id} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all bg-white">
                 {/* Field Card Header with Image on Left */}
                 <div className="flex flex-col md:flex-row">
                   {/* Field Image */}
@@ -105,18 +105,18 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                   </div>
 
                   {/* Field Info */}
-                  <div className="flex-1 p-3 sm:p-4 md:p-5 flex flex-col justify-between">
+                  <div className="flex-1 p-4 md:p-5 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                        <h4 className="text-base sm:text-lg font-semibold text-gray-900">{field.field_name}</h4>
+                      <div className="flex items-center gap-2 md:gap-3 mb-2">
+                        <h4 className="text-base md:text-lg font-bold text-[#1a1a1a]">{field.field_name}</h4>
                         {getStatusBadge(field.status)}
                       </div>
-                      <p className="text-xs sm:text-sm text-gray-600 mb-3">Tipe: {field.sport_type}</p>
+                      <p className="text-sm md:text-base text-gray-600 mb-3">Tipe: {field.sport_type}</p>
 
                       {/* Pricing Info */}
                       {pricing.length > 0 && (
-                        <div className="flex items-center gap-1 sm:gap-2 text-blue-600 font-semibold mb-4 text-sm sm:text-base">
-                          <DollarSign size={16} className="sm:w-5 sm:h-5" />
+                        <div className="flex items-center gap-2 text-[#0d47a1] font-semibold mb-4 text-sm md:text-base">
+                          <DollarSign size={18} className="md:w-5 md:h-5" />
                           <span>Mulai dari {formatPrice(minPrice)}</span>
                         </div>
                       )}
@@ -125,62 +125,64 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                     {/* Expand Button */}
                     <button
                       onClick={() => setExpandedFieldId(expandedFieldId === field.id ? null : field.id)}
-                      className="self-start flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-50 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition-colors text-sm sm:text-base"
+                      className="self-start flex items-center gap-2 px-4 py-2 bg-[#0d47a1] text-white font-semibold rounded-lg hover:bg-[#f97316] transition-colors text-sm md:text-base"
                     >
                       <span>{expandedFieldId === field.id ? "Sembunyikan" : "Lihat"} Jam Booking</span>
-                      <ChevronDown size={18} className={`transition-transform w-4 h-4 sm:w-5 sm:h-5 ${expandedFieldId === field.id ? "rotate-180" : ""}`} />
+                      <ChevronDown size={18} className={`transition-transform md:w-5 md:h-5 ${expandedFieldId === field.id ? "rotate-180" : ""}`} />
                     </button>
                   </div>
                 </div>
 
                 {/* Expandable Booking Section */}
                 {expandedFieldId === field.id && (
-                  <div className="border-t border-gray-200 p-3 sm:p-4 md:p-5 bg-gray-50">
+                  <div className="border-t border-gray-200 p-4 md:p-5 bg-gray-50">
                     {field.status === "AVAILABLE" ? (
                       <div>
-                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                          <Clock size={18} className="text-blue-600 w-4 h-4 sm:w-5 sm:h-5" />
-                          <h5 className="font-semibold text-gray-900 text-sm sm:text-base">Jam Booking Tersedia</h5>
+                        <div className="flex items-center gap-2 mb-3 md:mb-4">
+                          <Clock size={18} className="text-[#0d47a1] md:w-5 md:h-5" />
+                          <h5 className="font-semibold text-[#1a1a1a] text-sm md:text-base">Jam Booking Tersedia</h5>
                         </div>
 
-                        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1 sm:gap-2 mb-4">
+                        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-4">
                           {getAvailableTimeSlots(field.id).length > 0 ? (
                             getAvailableTimeSlots(field.id).map((time) => (
                               <button
                                 key={time}
-                                className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-blue-300 text-blue-700 font-semibold rounded hover:bg-blue-50 transition-colors text-xs sm:text-sm shadow-sm"
+                                className="px-3 py-2 bg-white border border-[#0d47a1]/30 text-[#0d47a1] font-semibold rounded-lg hover:bg-[#0d47a1] hover:text-white transition-colors text-xs md:text-sm shadow-sm"
                               >
                                 {time}
                               </button>
                             ))
                           ) : (
-                            <p className="text-xs sm:text-sm text-gray-500 col-span-full">Tidak ada waktu yang tersedia untuk hari ini</p>
+                            <p className="text-sm text-gray-500 col-span-full">Tidak ada waktu yang tersedia untuk hari ini</p>
                           )}
                         </div>
 
                         {/* Pricing Breakdown */}
                         {pricing.length > 0 && (
-                          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                            <p className="font-semibold text-gray-900 mb-2 text-xs sm:text-sm">Paket Harga:</p>
-                            <div className="space-y-1.5 sm:space-y-2">
+                          <div className="mb-4 p-3 md:p-4 bg-blue-50 rounded-lg border border-[#0d47a1]/20">
+                            <p className="font-semibold text-[#1a1a1a] mb-2 text-sm md:text-base">Paket Harga:</p>
+                            <div className="space-y-2">
                               {pricing.map((scheme) => (
-                                <div key={scheme.id} className="flex justify-between text-xs sm:text-sm">
+                                <div key={scheme.id} className="flex justify-between text-sm md:text-base">
                                   <span className="text-gray-700">
                                     {scheme.description} ({scheme.duration_minutes} menit)
                                   </span>
-                                  <span className="font-semibold text-blue-600">{formatPrice(scheme.price)}</span>
+                                  <span className="font-semibold text-[#0d47a1]">{formatPrice(scheme.price)}</span>
                                 </div>
                               ))}
                             </div>
                           </div>
                         )}
 
-                        <button className="w-full px-4 py-2 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">Pesan Sekarang</button>
+                        <button className="w-full px-4 py-2 md:py-3 bg-[#0d47a1] text-white font-semibold rounded-lg hover:bg-[#f97316] transition-colors text-sm md:text-base shadow-md">
+                          Pesan Sekarang
+                        </button>
                       </div>
                     ) : (
-                      <div className="bg-yellow-50 border border-yellow-200 p-3 sm:p-4 rounded-lg">
-                        <p className="text-yellow-800 font-semibold text-sm sm:text-base">Lapangan sedang dalam perawatan</p>
-                        <p className="text-xs sm:text-sm text-yellow-700 mt-1">Pemesanan untuk lapangan ini tidak tersedia saat ini.</p>
+                      <div className="bg-yellow-50 border border-yellow-200 p-3 md:p-4 rounded-lg">
+                        <p className="text-yellow-800 font-semibold text-sm md:text-base">Lapangan sedang dalam perawatan</p>
+                        <p className="text-sm text-yellow-700 mt-1">Pemesanan untuk lapangan ini tidak tersedia saat ini.</p>
                       </div>
                     )}
                   </div>
@@ -190,8 +192,8 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
           })}
         </div>
       ) : (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-          <p className="text-gray-600">Tidak ada lapangan yang tersedia</p>
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+          <p className="text-gray-600 text-base">Tidak ada lapangan yang tersedia</p>
         </div>
       )}
     </div>
