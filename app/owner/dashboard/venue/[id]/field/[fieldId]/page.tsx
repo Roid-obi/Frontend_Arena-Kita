@@ -44,6 +44,10 @@ export default function OwnerFieldDetail() {
   const [fieldPhoto, setFieldPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showAddPricing, setShowAddPricing] = useState(false);
+  const [pricingForm, setPricingForm] = useState({ duration_minutes: "", price: "", description: "" });
+  const [addingPricing, setAddingPricing] = useState(false);
+  const [deletingPricingId, setDeletingPricingId] = useState<number | null>(null);
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string | undefined;
@@ -186,6 +190,114 @@ export default function OwnerFieldDetail() {
       const error = e instanceof Error ? e : new Error(String(e));
       console.error(error);
       alert(error.message || "Gagal menghapus");
+    }
+  };
+
+  const handlePricingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setPricingForm({ ...pricingForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAddPricing = async () => {
+    if (!pricingForm.duration_minutes || !pricingForm.price) {
+      alert("Durasi dan harga harus diisi!");
+      return;
+    }
+
+    try {
+      if (!fieldId) return;
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      setAddingPricing(true);
+
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}/pricing`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          duration_minutes: parseInt(pricingForm.duration_minutes),
+          price: parseInt(pricingForm.price),
+          description: pricingForm.description,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Add failed: ${res.status}`);
+      const json = await res.json();
+      if (json?.status === "success") {
+        const newScheme: PricingScheme = {
+          id: json.data.id,
+          duration_minutes: json.data.duration_minutes,
+          price: json.data.price,
+          raw_price: json.data.raw_price,
+          description: json.data.description,
+        };
+        setField((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            pricing_schemes: [...prev.pricing_schemes, newScheme],
+          };
+        });
+        setPricingForm({ duration_minutes: "", price: "", description: "" });
+        setShowAddPricing(false);
+        alert("Skema harga berhasil ditambahkan!");
+      } else {
+        alert(json.message || "Gagal menambahkan skema harga");
+      }
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error(error);
+      alert(error.message || "Gagal menambahkan skema harga");
+    } finally {
+      setAddingPricing(false);
+    }
+  };
+
+  const handleDeletePricing = async (pricingId: number) => {
+    if (!confirm("Hapus skema harga ini? Tindakan tidak dapat dibatalkan.")) return;
+
+    try {
+      if (!fieldId) return;
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      setDeletingPricingId(pricingId);
+
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}/pricing/${pricingId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+      const json = await res.json();
+      if (json?.status === "success") {
+        setField((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            pricing_schemes: prev.pricing_schemes.filter((s) => s.id !== pricingId),
+          };
+        });
+        alert("Skema harga berhasil dihapus!");
+      } else {
+        alert(json.message || "Gagal menghapus skema harga");
+      }
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error(error);
+      alert(error.message || "Gagal menghapus skema harga");
+    } finally {
+      setDeletingPricingId(null);
     }
   };
 
@@ -350,36 +462,128 @@ export default function OwnerFieldDetail() {
       </div>
 
       {/* Pricing Schemes Section - Full Width */}
-      {!editing && field.pricing_schemes && field.pricing_schemes.length > 0 && (
+      {!editing && (
         <div className="mt-8 pt-8 border-t">
-          <h2 className="text-lg font-bold text-[#0d47a1] mb-6">Skema Harga</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {field.pricing_schemes.map((scheme) => (
-              <div key={scheme.id} className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Durasi</p>
-                    <p className="text-2xl font-bold text-[#0d47a1]">
-                      {scheme.duration_minutes}
-                      <span className="text-sm font-normal text-gray-600"> menit</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mb-3 pb-3 border-b border-blue-200">
-                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Harga</p>
-                  <p className="text-xl font-bold text-[#0d47a1]">{scheme.price}</p>
-                </div>
-
-                {scheme.description && (
-                  <div>
-                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Keterangan</p>
-                    <p className="text-sm text-gray-700">{scheme.description}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-[#0d47a1]">Skema Harga</h2>
+            <button onClick={() => setShowAddPricing(!showAddPricing)} className="inline-flex items-center gap-2 px-3 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] text-sm">
+              {showAddPricing ? (
+                <>
+                  <X size={16} />
+                  <span>Batal</span>
+                </>
+              ) : (
+                <>
+                  <Save size={16} />
+                  <span>Tambah Harga</span>
+                </>
+              )}
+            </button>
           </div>
+
+          {/* Form Tambah Skema Harga */}
+          {showAddPricing && (
+            <div className="mb-6 p-4 bg-white border border-gray-300 rounded-lg shadow-sm">
+              <h3 className="font-semibold mb-4 text-gray-900">Tambah Skema Harga Baru</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Durasi (menit) *</label>
+                  <input
+                    type="number"
+                    name="duration_minutes"
+                    value={pricingForm.duration_minutes}
+                    onChange={handlePricingChange}
+                    placeholder="Contoh: 30"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp) *</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={pricingForm.price}
+                    onChange={handlePricingChange}
+                    placeholder="Contoh: 200000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan (opsional)</label>
+                  <textarea
+                    name="description"
+                    value={pricingForm.description}
+                    onChange={handlePricingChange}
+                    placeholder="Contoh: Harga untuk hari kerja"
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddPricing}
+                    disabled={addingPricing}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Save size={16} />
+                    <span>{addingPricing ? "Menambahkan..." : "Simpan Harga"}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAddPricing(false);
+                      setPricingForm({ duration_minutes: "", price: "", description: "" });
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  >
+                    <X size={16} />
+                    <span>Batal</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pricing Schemes Grid */}
+          {field.pricing_schemes && field.pricing_schemes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {field.pricing_schemes.map((scheme) => (
+                <div key={scheme.id} className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow relative">
+                  <button
+                    onClick={() => handleDeletePricing(scheme.id)}
+                    disabled={deletingPricingId === scheme.id}
+                    className="absolute top-2 right-2 p-1.5 bg-red-50 text-red-700 rounded hover:bg-red-100 disabled:opacity-50"
+                    title="Hapus"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+
+                  <div className="flex items-start justify-between mb-3 pr-8">
+                    <div>
+                      <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Durasi</p>
+                      <p className="text-2xl font-bold text-[#0d47a1]">
+                        {scheme.duration_minutes}
+                        <span className="text-sm font-normal text-gray-600"> menit</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 pb-3 border-b border-blue-200">
+                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Harga</p>
+                    <p className="text-xl font-bold text-[#0d47a1]">{scheme.price}</p>
+                  </div>
+
+                  {scheme.description && (
+                    <div>
+                      <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Keterangan</p>
+                      <p className="text-sm text-gray-700">{scheme.description}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">Belum ada skema harga. Tambahkan skema harga pertama Anda!</div>
+          )}
         </div>
       )}
     </section>
