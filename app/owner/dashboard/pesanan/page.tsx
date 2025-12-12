@@ -33,7 +33,7 @@ interface Booking {
 
 const BOOKINGS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/bookings";
 
-type StatusTab = "PENDING" | "CONFIRMED" | "REJECTED" | "FAILED";
+type StatusTab = "PENDING" | "CONFIRMED" | "REJECTED" | "COMPLETED" | "FAILED";
 
 export default function OwnerPesanan() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -92,7 +92,8 @@ export default function OwnerPesanan() {
       (activeTab === "PENDING" && b.status === "PENDING") ||
       (activeTab === "CONFIRMED" && b.status === "CONFIRMED") ||
       (activeTab === "REJECTED" && (b.status === "REJECTED" || b.status === "CANCELLED")) ||
-      (activeTab === "FAILED" && (b.status === "FAILED" || b.status === "COMPLETED"));
+      (activeTab === "COMPLETED" && b.status === "COMPLETED") ||
+      (activeTab === "FAILED" && b.status === "FAILED");
 
     return matchesSearch && matchesTab;
   });
@@ -153,6 +154,7 @@ export default function OwnerPesanan() {
           { key: "PENDING", label: "Menunggu" },
           { key: "CONFIRMED", label: "Disetujui" },
           { key: "REJECTED", label: "Ditolak" },
+          { key: "COMPLETED", label: "Selesai" },
           { key: "FAILED", label: "Gagal" },
         ].map((tab) => (
           <button

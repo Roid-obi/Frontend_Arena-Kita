@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, ClipboardList, Grid, Settings, Menu, X } from "lucide-react";
+import { User, ClipboardList, Grid, Settings, Menu, X, Wallet } from "lucide-react";
 
 export default function OwnerSidebar() {
   const [open, setOpen] = useState(false);
@@ -12,6 +12,7 @@ export default function OwnerSidebar() {
   const menu = [
     { href: "/owner/dashboard", label: "Info Umum", icon: User },
     { href: "/owner/dashboard/pesanan", label: "Pesanan Masuk", icon: ClipboardList },
+    { href: "/owner/dashboard/transaksi", label: "Transaksi", icon: Wallet },
     { href: "/owner/dashboard/venue", label: "Kelola Venue", icon: Grid },
     { href: "/owner/dashboard/account", label: "Akun", icon: Settings },
   ];
