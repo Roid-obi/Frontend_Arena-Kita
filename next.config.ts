@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   images: {
     remotePatterns: [
+        {
+            protocol: 'https',
+            hostname: 'placehold.co', // Izinkan domain ini
+            port: '',
+            pathname: '/**',
+        },
       {
         protocol: "https",
         hostname: "picsum.photos",
