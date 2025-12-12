@@ -11,12 +11,43 @@ interface OwnerStats {
   raw_total_income: number;
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+}
+
+interface FieldInfo {
+  field_name: string;
+  sport_type: string;
+  venue_name: string;
+}
+
+interface Booking {
+  id: number;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  total_price: string;
+  raw_total_price: number;
+  status: string;
+  created_at: string;
+  created_at_human: string;
+  user: User;
+  field_info: FieldInfo;
+}
+
 const STATS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/dashboard/stats";
+const BOOKINGS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/dashboard/bookings";
 
 export default function OwnerDashboardHome() {
   const [stats, setStats] = useState<OwnerStats | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [bookingsError, setBookingsError] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -52,6 +83,61 @@ export default function OwnerDashboardHome() {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const token = Cookies.get("token");
+        if (!token) {
+          setBookingsError("Token tidak ditemukan");
+          setBookingsLoading(false);
+          return;
+        }
+
+        const response = await fetch(BOOKINGS_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.status === "success" && result.data) {
+          setBookings(result.data.slice(0, 10)); // Display latest 10 bookings
+        } else {
+          setBookingsError(result.message || "Gagal mengambil data booking");
+        }
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
+        setBookingsError("Terjadi kesalahan saat mengambil data booking");
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  const getStatusColor = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === "PENDING") return "bg-yellow-100 text-yellow-800";
+    if (statusUpper === "CONFIRMED") return "bg-green-100 text-green-800";
+    if (statusUpper === "COMPLETED") return "bg-emerald-100 text-emerald-800";
+    if (statusUpper === "REJECTED" || statusUpper === "CANCELLED") return "bg-red-100 text-red-800";
+    if (statusUpper === "FAILED") return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
+  };
+
+  const getStatusLabel = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === "PENDING") return "Menunggu";
+    if (statusUpper === "CONFIRMED") return "Disetujui";
+    if (statusUpper === "COMPLETED") return "Selesai";
+    if (statusUpper === "REJECTED") return "Ditolak";
+    if (statusUpper === "CANCELLED") return "Dibatalkan";
+    if (statusUpper === "FAILED") return "Gagal";
+    return status;
+  };
+
   return (
     <section>
       <div className="flex flex-col gap-2 mb-6">
@@ -74,6 +160,70 @@ export default function OwnerDashboardHome() {
           <StatCard title="Total Pendapatan" value={stats?.total_income ?? "Rp 0"} icon={<Wallet className="text-emerald-600" />} highlight="Sudah termasuk semua transaksi" />
         </div>
       )}
+
+      {/* Booking Masuk Section */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-[#0d47a1]">Booking Masuk</h2>
+        </div>
+
+        {bookingsError && <div className="mb-4 rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{bookingsError}</div>}
+
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          {bookingsLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#0d47a1]" />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">Tidak ada booking masuk</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lapangan</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {bookings.map((b) => (
+                    <tr key={b.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.id}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        <div>
+                          <p className="font-medium">{b.user.name}</p>
+                          <p className="text-xs text-gray-500">{b.user.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        <div>
+                          <p className="font-medium">{b.field_info.field_name}</p>
+                          <p className="text-xs text-gray-500">{b.field_info.sport_type}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{b.field_info.venue_name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{b.booking_date}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {b.start_time} - {b.end_time}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.total_price}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(b.status)}`}>{getStatusLabel(b.status)}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

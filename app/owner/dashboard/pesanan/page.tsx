@@ -31,7 +31,9 @@ interface Booking {
   field_info: FieldInfo;
 }
 
-const BOOKINGS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/dashboard/bookings";
+const BOOKINGS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/bookings";
+
+type StatusTab = "PENDING" | "CONFIRMED" | "REJECTED" | "FAILED";
 
 export default function OwnerPesanan() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -39,6 +41,7 @@ export default function OwnerPesanan() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<StatusTab>("PENDING");
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -75,14 +78,24 @@ export default function OwnerPesanan() {
     fetchBookings();
   }, []);
 
-  // Filter bookings berdasarkan search query
-  const filteredBookings = bookings.filter(
-    (b) =>
+  // Filter bookings berdasarkan search query dan tab status
+  const filteredBookings = bookings.filter((b) => {
+    // Filter by search query
+    const matchesSearch =
       b.id.toString().includes(searchQuery) ||
       b.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.field_info.field_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.booking_date.includes(searchQuery)
-  );
+      b.booking_date.includes(searchQuery);
+
+    // Filter by status tab
+    const matchesTab =
+      (activeTab === "PENDING" && b.status === "PENDING") ||
+      (activeTab === "CONFIRMED" && b.status === "CONFIRMED") ||
+      (activeTab === "REJECTED" && (b.status === "REJECTED" || b.status === "CANCELLED")) ||
+      (activeTab === "FAILED" && (b.status === "FAILED" || b.status === "COMPLETED"));
+
+    return matchesSearch && matchesTab;
+  });
 
   // Pagination logic
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -92,25 +105,26 @@ export default function OwnerPesanan() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, activeTab]);
 
   const getStatusColor = (status: string) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes("pembayaran")) return "bg-blue-100 text-blue-800";
-    if (statusLower.includes("konfirmasi")) return "bg-yellow-100 text-yellow-800";
-    if (statusLower.includes("terkonfirmasi")) return "bg-green-100 text-green-800";
-    if (statusLower.includes("selesai")) return "bg-emerald-100 text-emerald-800";
-    if (statusLower.includes("gagal")) return "bg-red-100 text-red-800";
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === "PENDING") return "bg-yellow-100 text-yellow-800";
+    if (statusUpper === "CONFIRMED") return "bg-green-100 text-green-800";
+    if (statusUpper === "COMPLETED") return "bg-emerald-100 text-emerald-800";
+    if (statusUpper === "REJECTED" || statusUpper === "CANCELLED") return "bg-red-100 text-red-800";
+    if (statusUpper === "FAILED") return "bg-red-100 text-red-800";
     return "bg-gray-100 text-gray-800";
   };
 
   const getStatusLabel = (status: string) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes("pembayaran")) return "Menunggu Pembayaran";
-    if (statusLower.includes("konfirmasi")) return "Menunggu Konfirmasi";
-    if (statusLower.includes("terkonfirmasi")) return "Terkonfirmasi";
-    if (statusLower.includes("selesai")) return "Selesai";
-    if (statusLower.includes("gagal")) return "Pesanan Gagal";
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === "PENDING") return "Menunggu Konfirmasi";
+    if (statusUpper === "CONFIRMED") return "Terkonfirmasi";
+    if (statusUpper === "COMPLETED") return "Selesai";
+    if (statusUpper === "REJECTED") return "Ditolak";
+    if (statusUpper === "CANCELLED") return "Dibatalkan";
+    if (statusUpper === "FAILED") return "Gagal";
     return status;
   };
 
@@ -127,8 +141,30 @@ export default function OwnerPesanan() {
 
       {error && <div className="mb-4 rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
 
-      <div className="mb-4 w-full md:w-64">
-        <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari pesanan..." />
+      <div className="mb-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="w-full md:w-64">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari pesanan..." />
+        </div>
+      </div>
+
+      {/* Tab Filter */}
+      <div className="mb-4 flex flex-wrap gap-2 border-b border-gray-200">
+        {[
+          { key: "PENDING", label: "Menunggu" },
+          { key: "CONFIRMED", label: "Disetujui" },
+          { key: "REJECTED", label: "Ditolak" },
+          { key: "FAILED", label: "Gagal" },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as StatusTab)}
+            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === tab.key ? "border-[#0d47a1] text-[#0d47a1]" : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="bg-white shadow-md rounded-lg">
@@ -175,34 +211,20 @@ export default function OwnerPesanan() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex gap-1 flex-wrap">
-                          {!getStatusLabel(b.status).includes("Selesai") && !getStatusLabel(b.status).includes("Gagal") && (
+                          {b.status === "PENDING" && (
                             <>
-                              {getStatusLabel(b.status).includes("Menunggu Pembayaran") && (
-                                <>
-                                  <button onClick={() => handleStatusChange(b.id, "confirmed")} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
-                                    Terima
-                                  </button>
-                                  <button onClick={() => handleStatusChange(b.id, "failed")} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
-                                    Tolak
-                                  </button>
-                                </>
-                              )}
-                              {getStatusLabel(b.status).includes("Menunggu Konfirmasi") && (
-                                <>
-                                  <button onClick={() => handleStatusChange(b.id, "confirmed")} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
-                                    Konfirmasi
-                                  </button>
-                                  <button onClick={() => handleStatusChange(b.id, "failed")} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
-                                    Tolak
-                                  </button>
-                                </>
-                              )}
-                              {getStatusLabel(b.status).includes("Terkonfirmasi") && (
-                                <button onClick={() => handleStatusChange(b.id, "completed")} className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                                  Selesaikan
-                                </button>
-                              )}
+                              <button onClick={() => handleStatusChange(b.id, "confirmed")} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
+                                Approve
+                              </button>
+                              <button onClick={() => handleStatusChange(b.id, "rejected")} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                Reject
+                              </button>
                             </>
+                          )}
+                          {b.status === "CONFIRMED" && (
+                            <button onClick={() => handleStatusChange(b.id, "completed")} className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                              Selesaikan
+                            </button>
                           )}
                           <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Detail</button>
                         </div>
