@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from "js-cookie";
-import { Pencil, Trash2, X, Save, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, X, Save, PlusCircle, Eye } from "lucide-react";
 
 interface VenueDetail {
   id: number;
@@ -43,6 +43,11 @@ export default function OwnerVenueDetail() {
   const [fieldPhoto, setFieldPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [addingField, setAddingField] = useState(false);
+  const [deletingFieldId, setDeletingFieldId] = useState<number | null>(null);
+  const [venuePhotoFile, setVenuePhotoFile] = useState<File | null>(null);
+  const [venuePhotoPreview, setVenuePhotoPreview] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<number | null>(null);
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string | undefined;
@@ -142,10 +147,11 @@ export default function OwnerVenueDetail() {
         });
         const json = await res.json();
         if (json?.status === "success" && Array.isArray(json.data)) {
-          const normalized = json.data.map((p: { id: number; photo_url: string }) => ({
-            id: p.id,
-            photo_url: p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`,
-          }));
+          const normalized = json.data.map((p: { id: number; url?: string; photo_url?: string }) => {
+            const raw = p.url ?? p.photo_url ?? "";
+            const full = raw?.startsWith("http") ? raw : `https://dev.api.arenakita.my.id/storage/${raw}`;
+            return { id: p.id, photo_url: full };
+          });
           setVenuePhotos(normalized);
         }
       } catch (e) {
@@ -241,6 +247,98 @@ export default function OwnerVenueDetail() {
     }
   };
 
+  const handleVenuePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVenuePhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setVenuePhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadVenuePhoto = async () => {
+    if (!venuePhotoFile) {
+      alert("Pilih foto terlebih dahulu.");
+      return;
+    }
+    try {
+      if (!id) return;
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      setUploadingPhoto(true);
+
+      const formData = new FormData();
+      formData.append("photo_url", venuePhotoFile);
+
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/photos`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      const json = await res.json();
+      if (json?.status === "success") {
+        const normalizedUrl = json.data?.url?.startsWith("http") ? json.data.url : `https://dev.api.arenakita.my.id/storage/${json.data?.url}`;
+        const newPhoto = { id: json.data?.id ?? Date.now(), photo_url: normalizedUrl };
+        setVenuePhotos((prev) => [...prev, newPhoto]);
+        setVenuePhotoFile(null);
+        setVenuePhotoPreview(null);
+        alert("Foto venue berhasil ditambahkan!");
+      } else {
+        alert(json?.message || "Gagal menambahkan foto");
+      }
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error(error);
+      alert(error.message || "Gagal menambahkan foto");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleDeleteVenuePhoto = async (photoId: number) => {
+    if (!confirm("Hapus foto ini? Tindakan tidak dapat dibatalkan.")) return;
+    try {
+      if (!id) return;
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      setDeletingPhotoId(photoId);
+
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/photos/${photoId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+      const json = await res.json();
+      if (json?.status === "success") {
+        setVenuePhotos((prev) => prev.filter((p) => p.id !== photoId));
+        alert("Foto venue berhasil dihapus!");
+      } else {
+        alert(json?.message || "Gagal menghapus foto");
+      }
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error(error);
+      alert(error.message || "Gagal menghapus foto");
+    } finally {
+      setDeletingPhotoId(null);
+    }
+  };
+
   const handleAddField = async () => {
     if (!fieldForm.field_name || !fieldForm.sport_type) {
       alert("Nama dan tipe lapangan harus diisi!");
@@ -301,11 +399,7 @@ export default function OwnerVenueDetail() {
         name: newFieldData.name,
         type: newFieldData.type,
         status: newFieldData.status || "AVAILABLE",
-        photoUrl: newFieldData.photo_url
-          ? newFieldData.photo_url.startsWith("http")
-            ? newFieldData.photo_url
-            : `https://dev.api.arenakita.my.id/storage/${newFieldData.photo_url}`
-          : null,
+        photoUrl: newFieldData.photo_url ? (newFieldData.photo_url.startsWith("http") ? newFieldData.photo_url : `https://dev.api.arenakita.my.id/storage/${newFieldData.photo_url}`) : null,
       };
       setFields((prev) => [...prev, newField]);
 
@@ -323,12 +417,48 @@ export default function OwnerVenueDetail() {
     }
   };
 
+  const handleDeleteField = async (fieldId: number) => {
+    if (!confirm("Hapus lapangan ini? Tindakan tidak dapat dibatalkan.")) return;
+    try {
+      setDeletingFieldId(fieldId);
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+      const json = await res.json();
+      if (json?.status === "success") {
+        setFields((prev) => prev.filter((f) => f.id !== fieldId));
+        alert("Lapangan berhasil dihapus!");
+      } else {
+        alert(json?.message || "Gagal menghapus lapangan");
+      }
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error("Delete field error:", error);
+      alert(error.message || "Gagal menghapus lapangan");
+    } finally {
+      setDeletingFieldId(null);
+    }
+  };
+
   if (loading) return <div>Memuat detail...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!venue) return <div>Tidak ada data</div>;
 
   return (
     <section>
+      <button onClick={() => router.back()} className="mb-4 flex items-center gap-1 px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+        <span>← Kembali</span>
+      </button>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-[#0d47a1]">{venue.venue_name}</h1>
         <div className="flex gap-2">
@@ -367,10 +497,59 @@ export default function OwnerVenueDetail() {
             {(venuePhotos.length ? venuePhotos : (venue.venue_photo || []).map((p) => ({ id: p.id, photo_url: p.photo_url }))).map((p: { id: number; photo_url: string }) => {
               const photoUrl = p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`;
               return (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={p.id} src={photoUrl} alt="photo" className="w-full h-40 object-cover rounded" />
+                <div key={p.id} className="relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photoUrl} alt="photo" className="w-full h-40 object-cover rounded" />
+                  <button
+                    onClick={() => handleDeleteVenuePhoto(p.id)}
+                    disabled={deletingPhotoId === p.id}
+                    className="absolute top-2 right-2 px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 opacity-0 group-hover:opacity-100 transition disabled:opacity-50"
+                    title="Hapus foto"
+                  >
+                    {deletingPhotoId === p.id ? "..." : "Hapus"}
+                  </button>
+                </div>
               );
             })}
+          </div>
+
+          <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <h3 className="font-semibold text-gray-900 mb-3">Tambah Foto Venue</h3>
+            <div className="space-y-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleVenuePhotoChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+              />
+              {venuePhotoPreview && (
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Preview:</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={venuePhotoPreview} alt="preview" className="w-full h-40 object-cover rounded" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleUploadVenuePhoto}
+                  disabled={uploadingPhoto || !venuePhotoFile}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save size={16} />
+                  <span>{uploadingPhoto ? "Mengunggah..." : "Unggah Foto"}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setVenuePhotoFile(null);
+                    setVenuePhotoPreview(null);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                >
+                  <X size={16} />
+                  <span>Reset</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
@@ -581,9 +760,26 @@ export default function OwnerVenueDetail() {
                     />
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{field.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">Tipe: {field.type}</p>
-                    <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{field.name}</h3>
+                      <span className={`px-2 py-1 text-xs rounded ml-2 shrink-0 ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">Tipe: {field.type}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => router.push(`/owner/dashboard/venue/${id}/field/${field.id}`)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+                      >
+                        <Eye size={14} /> Lihat
+                      </button>
+                      <button
+                        onClick={() => handleDeleteField(field.id)}
+                        disabled={deletingFieldId === field.id}
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 size={14} /> {deletingFieldId === field.id ? "..." : "Hapus"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
