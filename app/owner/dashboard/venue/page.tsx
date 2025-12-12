@@ -19,6 +19,49 @@ interface OwnerVenueItem {
   owner?: { id: number; full_name: string; email: string } | null;
 }
 
+const ImageCarousel: React.FC<{ images: string[]; alt: string; placeholder: string }> = ({ images, alt, placeholder }) => {
+  const fallbackImages = images.length ? images : [placeholder];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const activeIndex = fallbackImages.length ? currentIndex % fallbackImages.length : 0;
+
+  // Auto-cycle images when not hovered to mimic home card behavior
+  useEffect(() => {
+    if (fallbackImages.length <= 1 || isHovered) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % fallbackImages.length);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [fallbackImages.length, isHovered]);
+
+  return (
+    <div className="relative w-full h-40 bg-gray-100 overflow-hidden" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      {fallbackImages.map((src, idx) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={`${src}-${idx}`}
+          src={src}
+          alt={`${alt} - ${idx + 1}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${idx === activeIndex ? "opacity-100" : "opacity-0"}`}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = placeholder;
+          }}
+        />
+      ))}
+
+      {fallbackImages.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {fallbackImages.map((_, idx) => (
+            <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === activeIndex ? "bg-white" : "bg-white opacity-50"}`} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function OwnerVenue() {
   const [venues, setVenues] = useState<OwnerVenueItem[]>([]);
   const [venuePhotos, setVenuePhotos] = useState<Record<number, string[]>>({});
@@ -30,6 +73,11 @@ export default function OwnerVenue() {
   const itemsPerPage = 9;
 
   const PLACEHOLDER_IMG = "https://placehold.co/300x200/0d47a1/ffffff?text=Venue";
+
+  const getPhotoUrl = (url?: string | null) => {
+    if (!url) return null;
+    return url.startsWith("http") ? url : `https://dev.api.arenakita.my.id/storage/${url}`;
+  };
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -70,7 +118,10 @@ export default function OwnerVenue() {
                     });
                     const pj = await pr.json();
                     if (pj?.status === "success" && Array.isArray(pj.data)) {
-                      const urls: string[] = pj.data.map((p: { photo_url: string }) => (p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`));
+                      const urls: string[] = pj.data
+                        .map((p: { photo_url?: string; url?: string }) => p.url || p.photo_url || "")
+                        .filter(Boolean)
+                        .map((raw: string) => (raw.startsWith("http") ? raw : `https://dev.api.arenakita.my.id/storage/${raw}`));
                       return { id: v.id, urls };
                     }
                   } catch (e) {
@@ -182,17 +233,10 @@ export default function OwnerVenue() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {currentVenues.map((v) => (
               <div key={v.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-100">
-                <div className="w-full h-40 bg-gray-100 relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={(venuePhotos[v.id] && venuePhotos[v.id][0]) || PLACEHOLDER_IMG}
-                    alt={v.venue_name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = PLACEHOLDER_IMG;
-                    }}
-                  />
-                </div>
+                {(() => {
+                  const photos = (venuePhotos[v.id] || []).map((p) => getPhotoUrl(p) || "").filter(Boolean);
+                  return <ImageCarousel images={photos} alt={v.venue_name} placeholder={PLACEHOLDER_IMG} />;
+                })()}
                 <div className="p-4 space-y-2">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{v.venue_name}</h3>
