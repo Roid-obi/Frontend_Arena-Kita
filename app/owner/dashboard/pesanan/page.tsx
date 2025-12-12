@@ -42,6 +42,7 @@ export default function OwnerPesanan() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<StatusTab>("PENDING");
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -129,10 +130,76 @@ export default function OwnerPesanan() {
     return status;
   };
 
-  const handleStatusChange = async (bookingId: number, newStatus: string) => {
-    // TODO: Implementasikan API call untuk mengubah status
-    // const response = await fetch(`/api/proxy/owners/bookings/${bookingId}/status`, {...})
-    console.log(`Mengubah status booking ${bookingId} menjadi ${newStatus}`);
+  const handleApprove = async (bookingId: number) => {
+    if (!confirm("Setujui booking ini?")) return;
+
+    try {
+      setActionLoading(bookingId);
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+
+      const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/bookings/${bookingId}/approve`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === "success") {
+        // Update booking status locally
+        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status: "CONFIRMED" } : b)));
+        alert("Booking berhasil disetujui");
+      } else {
+        throw new Error(result.message || "Gagal menyetujui booking");
+      }
+    } catch (err) {
+      console.error("Error approving booking:", err);
+      alert((err instanceof Error ? err.message : String(err)) || "Terjadi kesalahan saat menyetujui booking");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (bookingId: number) => {
+    if (!confirm("Tolak booking ini? Tindakan tidak dapat dibatalkan.")) return;
+
+    try {
+      setActionLoading(bookingId);
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+
+      const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/bookings/${bookingId}/reject`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === "success") {
+        // Update booking status locally
+        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status: "REJECTED" } : b)));
+        alert("Booking berhasil ditolak");
+      } else {
+        throw new Error(result.message || "Gagal menolak booking");
+      }
+    } catch (err) {
+      console.error("Error rejecting booking:", err);
+      alert((err instanceof Error ? err.message : String(err)) || "Terjadi kesalahan saat menolak booking");
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   return (
@@ -215,20 +282,22 @@ export default function OwnerPesanan() {
                         <div className="flex gap-1 flex-wrap">
                           {b.status === "PENDING" && (
                             <>
-                              <button onClick={() => handleStatusChange(b.id, "confirmed")} className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
-                                Approve
+                              <button
+                                onClick={() => handleApprove(b.id)}
+                                disabled={actionLoading === b.id}
+                                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {actionLoading === b.id ? "..." : "Approve"}
                               </button>
-                              <button onClick={() => handleStatusChange(b.id, "rejected")} className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
-                                Reject
+                              <button
+                                onClick={() => handleReject(b.id)}
+                                disabled={actionLoading === b.id}
+                                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {actionLoading === b.id ? "..." : "Reject"}
                               </button>
                             </>
                           )}
-                          {b.status === "CONFIRMED" && (
-                            <button onClick={() => handleStatusChange(b.id, "completed")} className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                              Selesaikan
-                            </button>
-                          )}
-                          <button className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Detail</button>
                         </div>
                       </td>
                     </tr>

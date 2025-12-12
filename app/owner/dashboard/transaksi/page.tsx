@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
+import { X } from "lucide-react";
 
 interface User {
   id: number;
@@ -48,6 +49,7 @@ export default function OwnerTransaksi() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -121,6 +123,27 @@ export default function OwnerTransaksi() {
     return status;
   };
 
+  const getBookingStatusColor = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === "PENDING") return "bg-yellow-100 text-yellow-800";
+    if (statusUpper === "CONFIRMED") return "bg-green-100 text-green-800";
+    if (statusUpper === "COMPLETED") return "bg-emerald-100 text-emerald-800";
+    if (statusUpper === "REJECTED" || statusUpper === "CANCELLED") return "bg-red-100 text-red-800";
+    if (statusUpper === "FAILED") return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
+  };
+
+  const getBookingStatusLabel = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === "PENDING") return "Menunggu";
+    if (statusUpper === "CONFIRMED") return "Disetujui";
+    if (statusUpper === "COMPLETED") return "Selesai";
+    if (statusUpper === "REJECTED") return "Ditolak";
+    if (statusUpper === "CANCELLED") return "Dibatalkan";
+    if (statusUpper === "FAILED") return "Gagal";
+    return status;
+  };
+
   return (
     <section>
       <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Riwayat Transaksi</h1>
@@ -153,6 +176,7 @@ export default function OwnerTransaksi() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -182,6 +206,11 @@ export default function OwnerTransaksi() {
                       <td className="px-4 py-3 text-sm">
                         <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getPaymentStatusColor(t.payment_status)}`}>{getPaymentStatusLabel(t.payment_status)}</span>
                       </td>
+                      <td className="px-4 py-3 text-sm">
+                        <button onClick={() => setSelectedTransaction(t)} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+                          Detail
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -196,6 +225,126 @@ export default function OwnerTransaksi() {
           </>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {selectedTransaction && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedTransaction(null)}>
+          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[#0d47a1]">Detail Transaksi</h2>
+              <button onClick={() => setSelectedTransaction(null)} className="p-1 hover:bg-gray-100 rounded-full transition">
+                <X size={20} className="text-gray-600" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Transaction Info */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Transaksi</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">ID Transaksi:</span>
+                    <span className="text-sm font-semibold text-gray-900">#{selectedTransaction.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Metode Pembayaran:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.payment_method}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Waktu Pembayaran:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.payment_time}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Status Pembayaran:</span>
+                    <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getPaymentStatusColor(selectedTransaction.payment_status)}`}>
+                      {getPaymentStatusLabel(selectedTransaction.payment_status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking Info */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Booking</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">ID Booking:</span>
+                    <span className="text-sm font-semibold text-gray-900">#{selectedTransaction.booking.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Status Booking:</span>
+                    <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getBookingStatusColor(selectedTransaction.booking.status)}`}>
+                      {getBookingStatusLabel(selectedTransaction.booking.status)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Tanggal Booking:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.booking.booking_date}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Jam Booking:</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {selectedTransaction.booking.start_time} - {selectedTransaction.booking.end_time}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Total Harga:</span>
+                    <span className="text-sm font-bold text-[#0d47a1]">{selectedTransaction.booking.total_price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Dibuat:</span>
+                    <span className="text-sm text-gray-900">{selectedTransaction.booking.created_at_human}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Venue & Field Info */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Venue & Lapangan</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Venue:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.booking.field_info.venue_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Lapangan:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.booking.field_info.field_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Tipe Olahraga:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.booking.field_info.sport_type}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* User Info */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Pemesan</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Nama:</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedTransaction.booking.user.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Email:</span>
+                    <span className="text-sm text-gray-900">{selectedTransaction.booking.user.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Telepon:</span>
+                    <span className="text-sm text-gray-900">{selectedTransaction.booking.user.phone || "-"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4">
+              <button onClick={() => setSelectedTransaction(null)} className="w-full px-4 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] transition">
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
