@@ -50,7 +50,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
   const [expandedFieldId, setExpandedFieldId] = useState<number | null>(null);
 
   const getFieldPhotoUrl = (url: string) => {
-    if (url.startsWith('http')) return url;
+    if (url.startsWith("http")) return url;
     return `https://dev.api.arenakita.my.id/storage/${url}`;
   };
 

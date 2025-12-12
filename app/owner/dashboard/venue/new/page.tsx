@@ -58,16 +58,33 @@ export default function NewVenuePage() {
         {error && <div className="text-red-600">{error}</div>}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nama Venue</label>
-          <input name="venue_name" value={form.venue_name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" required />
+          <input
+            name="venue_name"
+            value={form.venue_name}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            required
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-          <textarea name="description" value={form.description} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" rows={3} />
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            rows={3}
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-            <input name="address" value={form.address} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+            <input
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Kota</label>
@@ -76,16 +93,34 @@ export default function NewVenuePage() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Koordinat GPS (opsional)</label>
-          <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+          <input
+            name="gps_coordinate"
+            value={form.gps_coordinate}
+            onChange={handleChange}
+            placeholder="Contoh: -6.2088,106.8456"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Buka</label>
-            <input type="time" name="opening_time" value={form.opening_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+            <input
+              type="time"
+              name="opening_time"
+              value={form.opening_time}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tutup</label>
-            <input type="time" name="closing_time" value={form.closing_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+            <input
+              type="time"
+              name="closing_time"
+              value={form.closing_time}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            />
           </div>
         </div>
         <div className="flex gap-2">

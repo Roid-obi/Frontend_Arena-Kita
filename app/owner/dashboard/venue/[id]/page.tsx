@@ -34,6 +34,7 @@ export default function OwnerVenueDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [venuePhotos, setVenuePhotos] = useState<Array<{ id: number; photo_url: string }>>([]);
   const [form, setForm] = useState({ venue_name: "", address: "", city: "", description: "", gps_coordinate: "", opening_time: "", closing_time: "" });
   const [fields, setFields] = useState<Field[]>([]);
   const [fieldsLoading, setFieldsLoading] = useState(false);
@@ -125,6 +126,33 @@ export default function OwnerVenueDetail() {
       }
     };
     fetchFields();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      if (!id) return;
+      try {
+        const token = Cookies.get("token");
+        if (!token) return;
+        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/photos`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+        const json = await res.json();
+        if (json?.status === "success" && Array.isArray(json.data)) {
+          const normalized = json.data.map((p: { id: number; photo_url: string }) => ({
+            id: p.id,
+            photo_url: p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`,
+          }));
+          setVenuePhotos(normalized);
+        }
+      } catch (e) {
+        console.warn("Failed fetching venue photos", e);
+      }
+    };
+    fetchPhotos();
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -223,6 +251,7 @@ export default function OwnerVenueDetail() {
       const formData = new FormData();
       formData.append("field_name", fieldForm.field_name);
       formData.append("sport_type", fieldForm.sport_type.toLowerCase());
+      formData.append("status", "AVAILABLE");
       if (includePhoto && fieldPhoto) {
         formData.append("field_photo", fieldPhoto);
       }
@@ -265,27 +294,20 @@ export default function OwnerVenueDetail() {
         throw new Error(msg);
       }
 
-      // Refresh daftar fields
-      const token = Cookies.get("token");
-      const fieldsRes = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/fields`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-      const fieldsJson = await fieldsRes.json();
-      if (fieldsJson?.status === "success") {
-        const mapped: Field[] = (fieldsJson.data || []).map(
-          (f: { id: number; field_name?: string; name?: string; sport_type?: string; type?: string; status?: string; field_photo_url?: string | null; photo_url?: string | null }) => ({
-            id: f.id,
-            name: f.field_name ?? f.name ?? "Tanpa Nama",
-            type: f.sport_type ?? f.type ?? "-",
-            status: f.status ?? "-",
-            photoUrl: f.field_photo_url ?? f.photo_url ?? null,
-          })
-        );
-        setFields(mapped);
-      }
+      // Map response data to Field and add to list
+      const newFieldData = payload.data;
+      const newField: Field = {
+        id: newFieldData.id,
+        name: newFieldData.name,
+        type: newFieldData.type,
+        status: newFieldData.status || "AVAILABLE",
+        photoUrl: newFieldData.photo_url
+          ? newFieldData.photo_url.startsWith("http")
+            ? newFieldData.photo_url
+            : `https://dev.api.arenakita.my.id/storage/${newFieldData.photo_url}`
+          : null,
+      };
+      setFields((prev) => [...prev, newField]);
 
       setFieldForm({ field_name: "", sport_type: "" });
       setFieldPhoto(null);
@@ -310,10 +332,7 @@ export default function OwnerVenueDetail() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-[#0d47a1]">{venue.venue_name}</h1>
         <div className="flex gap-2">
-          <button
-            onClick={() => setEditing(!editing)}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
-          >
+          <button onClick={() => setEditing(!editing)} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
             {editing ? (
               <>
                 <X size={14} />
@@ -326,10 +345,7 @@ export default function OwnerVenueDetail() {
               </>
             )}
           </button>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
-          >
+          <button onClick={handleDelete} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100">
             <Trash2 size={14} />
             <span>Hapus</span>
           </button>
@@ -348,8 +364,8 @@ export default function OwnerVenueDetail() {
           {venue.created_at && <p className="text-xs text-gray-500">Dibuat: {new Date(venue.created_at).toLocaleString("id-ID")}</p>}
           {venue.updated_at && <p className="text-xs text-gray-500">Diperbarui: {new Date(venue.updated_at).toLocaleString("id-ID")}</p>}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
-            {(venue.venue_photo || []).map((p) => {
-              const photoUrl = p.photo_url.startsWith('http') ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`;
+            {(venuePhotos.length ? venuePhotos : (venue.venue_photo || []).map((p) => ({ id: p.id, photo_url: p.photo_url }))).map((p: { id: number; photo_url: string }) => {
+              const photoUrl = p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`;
               return (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={p.id} src={photoUrl} alt="photo" className="w-full h-40 object-cover rounded" />
@@ -361,48 +377,81 @@ export default function OwnerVenueDetail() {
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nama Venue</label>
-            <input name="venue_name" value={form.venue_name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+            <input
+              name="venue_name"
+              value={form.venue_name}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-            <textarea name="description" value={form.description} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" rows={3} />
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+              rows={3}
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-              <input name="address" value={form.address} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+              <input
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Kota</label>
-              <input name="city" value={form.city} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+              <input
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+              />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Koordinat GPS (opsional)</label>
-            <input name="gps_coordinate" value={form.gps_coordinate} onChange={handleChange} placeholder="Contoh: -6.2088,106.8456" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+            <input
+              name="gps_coordinate"
+              value={form.gps_coordinate}
+              onChange={handleChange}
+              placeholder="Contoh: -6.2088,106.8456"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+            />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Buka</label>
-              <input name="opening_time" type="time" value={form.opening_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+              <input
+                name="opening_time"
+                type="time"
+                value={form.opening_time}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tutup</label>
-              <input name="closing_time" type="time" value={form.closing_time} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+              <input
+                name="closing_time"
+                type="time"
+                value={form.closing_time}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+              />
             </div>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055]"
-            >
+            <button onClick={handleSave} className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055]">
               <Save size={16} />
               <span>Simpan</span>
             </button>
-            <button
-              onClick={() => setEditing(false)}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
+            <button onClick={() => setEditing(false)} className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
               <X size={16} />
               <span>Batal</span>
             </button>
@@ -414,10 +463,7 @@ export default function OwnerVenueDetail() {
       <div className="mt-8 pt-8 border-t">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-[#0d47a1]">Daftar Lapangan</h2>
-          <button
-            onClick={() => setShowAddField(!showAddField)}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] text-sm"
-          >
+          <button onClick={() => setShowAddField(!showAddField)} className="inline-flex items-center gap-2 px-3 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] text-sm">
             {showAddField ? (
               <>
                 <X size={16} />
@@ -439,11 +485,22 @@ export default function OwnerVenueDetail() {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lapangan *</label>
-                <input name="field_name" value={fieldForm.field_name} onChange={handleFieldChange} placeholder="Contoh: Lapangan Futsal A" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+                <input
+                  name="field_name"
+                  value={fieldForm.field_name}
+                  onChange={handleFieldChange}
+                  placeholder="Contoh: Lapangan Futsal A"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Lapangan *</label>
-                <select name="sport_type" value={fieldForm.sport_type} onChange={handleFieldChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm">
+                <select
+                  name="sport_type"
+                  value={fieldForm.sport_type}
+                  onChange={handleFieldChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                >
                   <option value="">Pilih Tipe</option>
                   <option value="futsal">Futsal</option>
                   <option value="basket">Basket</option>
@@ -456,7 +513,12 @@ export default function OwnerVenueDetail() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Foto Lapangan (opsional)</label>
-                <input type="file" accept="image/*" onChange={handlePhotoChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                />
                 {photoPreview && (
                   <div className="mt-2">
                     <p className="text-xs text-gray-600 mb-1">Preview:</p>
@@ -499,7 +561,7 @@ export default function OwnerVenueDetail() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {fields.map((field) => {
-              const FIELD_PLACEHOLDER = "https://via.placeholder.com/400x300?text=Field+Photo";
+              const FIELD_PLACEHOLDER = "https://placehold.co/300x200/0d47a1/ffffff?text=Field";
               let displayPhotoUrl = field.photoUrl || FIELD_PLACEHOLDER;
               if (field.photoUrl && !field.photoUrl.startsWith("http")) {
                 displayPhotoUrl = `https://dev.api.arenakita.my.id/storage/${field.photoUrl}`;

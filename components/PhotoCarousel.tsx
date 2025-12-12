@@ -32,7 +32,7 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
   };
 
   const getPhotoUrl = (url: string) => {
-    if (url.startsWith('http')) return url;
+    if (url.startsWith("http")) return url;
     return `https://dev.api.arenakita.my.id/storage/${url}`;
   };
 

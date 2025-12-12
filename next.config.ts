@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "dev.api.arenakita.my.id",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+        pathname: "/**",
       },
     ],
   },

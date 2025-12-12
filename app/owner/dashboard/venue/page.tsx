@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
-import { PlusCircle, Eye, Trash2, MapPin, Clock } from "lucide-react";
+import { PlusCircle, Eye, Trash2 } from "lucide-react";
 
 interface OwnerVenueItem {
   id: number;
@@ -21,6 +21,7 @@ interface OwnerVenueItem {
 
 export default function OwnerVenue() {
   const [venues, setVenues] = useState<OwnerVenueItem[]>([]);
+  const [venuePhotos, setVenuePhotos] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -28,7 +29,7 @@ export default function OwnerVenue() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  const PLACEHOLDER_IMG = "https://via.placeholder.com/400x300/0d47a1/ffffff?text=Venue+Photo";
+  const PLACEHOLDER_IMG = "https://placehold.co/300x200/0d47a1/ffffff?text=Venue";
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -57,6 +58,34 @@ export default function OwnerVenue() {
         const json = await res.json();
         if (json && json.status === "success" && Array.isArray(json.data)) {
           setVenues(json.data);
+          // Fetch photos for each venue in parallel
+          try {
+            const token2 = Cookies.get("token");
+            if (token2) {
+              const photoResults = await Promise.all(
+                json.data.map(async (v: OwnerVenueItem) => {
+                  try {
+                    const pr = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${v.id}/photos`, {
+                      headers: { Authorization: `Bearer ${token2}`, Accept: "application/json" },
+                    });
+                    const pj = await pr.json();
+                    if (pj?.status === "success" && Array.isArray(pj.data)) {
+                      const urls: string[] = pj.data.map((p: { photo_url: string }) => (p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`));
+                      return { id: v.id, urls };
+                    }
+                  } catch (e) {
+                    console.warn("Fetch photos failed for venue", v.id, e);
+                  }
+                  return { id: v.id, urls: [] as string[] };
+                })
+              );
+              const map: Record<number, string[]> = {};
+              photoResults.forEach((r) => (map[r.id] = r.urls));
+              setVenuePhotos(map);
+            }
+          } catch (e) {
+            console.warn("Bulk fetch venue photos failed", e);
+          }
         } else {
           setError(json.message || "Gagal memuat data");
         }
@@ -156,7 +185,7 @@ export default function OwnerVenue() {
                 <div className="w-full h-40 bg-gray-100 relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={PLACEHOLDER_IMG}
+                    src={(venuePhotos[v.id] && venuePhotos[v.id][0]) || PLACEHOLDER_IMG}
                     alt={v.venue_name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
