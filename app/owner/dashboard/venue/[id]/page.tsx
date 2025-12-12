@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from "js-cookie";
-import { Pencil, Trash2, X, Save, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, X, Save, PlusCircle, Eye } from "lucide-react";
 
 interface VenueDetail {
   id: number;
@@ -43,6 +43,7 @@ export default function OwnerVenueDetail() {
   const [fieldPhoto, setFieldPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [addingField, setAddingField] = useState(false);
+  const [deletingFieldId, setDeletingFieldId] = useState<number | null>(null);
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string | undefined;
@@ -301,11 +302,7 @@ export default function OwnerVenueDetail() {
         name: newFieldData.name,
         type: newFieldData.type,
         status: newFieldData.status || "AVAILABLE",
-        photoUrl: newFieldData.photo_url
-          ? newFieldData.photo_url.startsWith("http")
-            ? newFieldData.photo_url
-            : `https://dev.api.arenakita.my.id/storage/${newFieldData.photo_url}`
-          : null,
+        photoUrl: newFieldData.photo_url ? (newFieldData.photo_url.startsWith("http") ? newFieldData.photo_url : `https://dev.api.arenakita.my.id/storage/${newFieldData.photo_url}`) : null,
       };
       setFields((prev) => [...prev, newField]);
 
@@ -323,12 +320,48 @@ export default function OwnerVenueDetail() {
     }
   };
 
+  const handleDeleteField = async (fieldId: number) => {
+    if (!confirm("Hapus lapangan ini? Tindakan tidak dapat dibatalkan.")) return;
+    try {
+      setDeletingFieldId(fieldId);
+      const token = Cookies.get("token");
+      if (!token) {
+        alert("Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+      const json = await res.json();
+      if (json?.status === "success") {
+        setFields((prev) => prev.filter((f) => f.id !== fieldId));
+        alert("Lapangan berhasil dihapus!");
+      } else {
+        alert(json?.message || "Gagal menghapus lapangan");
+      }
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      console.error("Delete field error:", error);
+      alert(error.message || "Gagal menghapus lapangan");
+    } finally {
+      setDeletingFieldId(null);
+    }
+  };
+
   if (loading) return <div>Memuat detail...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!venue) return <div>Tidak ada data</div>;
 
   return (
     <section>
+      <button onClick={() => router.back()} className="mb-4 flex items-center gap-1 px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+        <span>← Kembali</span>
+      </button>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-[#0d47a1]">{venue.venue_name}</h1>
         <div className="flex gap-2">
@@ -581,9 +614,26 @@ export default function OwnerVenueDetail() {
                     />
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{field.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">Tipe: {field.type}</p>
-                    <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{field.name}</h3>
+                      <span className={`px-2 py-1 text-xs rounded ml-2 shrink-0 ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">Tipe: {field.type}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => router.push(`/owner/dashboard/venue/${id}/field/${field.id}`)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+                      >
+                        <Eye size={14} /> Lihat
+                      </button>
+                      <button
+                        onClick={() => handleDeleteField(field.id)}
+                        disabled={deletingFieldId === field.id}
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 size={14} /> {deletingFieldId === field.id ? "..." : "Hapus"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
