@@ -7,12 +7,10 @@ import { Pencil, Trash2, X, Save } from "lucide-react";
 
 interface PricingScheme {
   id: number;
-  field_id: number;
-  time_slot: string;
-  day_type: string;
-  price: number;
-  created_at?: string;
-  updated_at?: string;
+  duration_minutes: number;
+  price: string;
+  raw_price: number;
+  description: string;
 }
 
 interface Venue {
@@ -227,138 +225,160 @@ export default function OwnerFieldDetail() {
         </div>
       </div>
 
-      {/* Field Photo */}
-      <div className="mb-6">
-        <div className="w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={displayPhotoUrl}
-            alt={field.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = FIELD_PLACEHOLDER;
-            }}
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Photo Column */}
+        <div>
+          <div className="w-full h-80 bg-gray-100 rounded-lg overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={displayPhotoUrl}
+              alt={field.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = FIELD_PLACEHOLDER;
+              }}
+            />
+          </div>
         </div>
-      </div>
 
-      {!editing ? (
-        <div className="space-y-3">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Tipe:</span> {field.type}
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Status:</span>{" "}
-            <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Venue:</span> {field.venue?.venue_name || "Tidak tersedia"}
-          </p>
-          {field.venue?.address && (
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Alamat:</span> {field.venue.address}
-            </p>
-          )}
-          {field.venue?.city && (
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Kota:</span> {field.venue.city}
-            </p>
-          )}
-
-          {/* Pricing Schemes */}
-          {field.pricing_schemes && field.pricing_schemes.length > 0 && (
-            <div className="mt-6 pt-6 border-t">
-              <h2 className="text-lg font-bold text-[#0d47a1] mb-4">Skema Harga</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 px-2">Slot Waktu</th>
-                      <th className="text-left py-2 px-2">Tipe Hari</th>
-                      <th className="text-left py-2 px-2">Harga</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {field.pricing_schemes.map((scheme) => (
-                      <tr key={scheme.id} className="border-b hover:bg-gray-50">
-                        <td className="py-2 px-2">{scheme.time_slot}</td>
-                        <td className="py-2 px-2">{scheme.day_type}</td>
-                        <td className="py-2 px-2">Rp {scheme.price?.toLocaleString("id-ID") || 0}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        {/* Information Column */}
+        <div>
+          {!editing ? (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Tipe:</span> {field.type}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Status:</span>{" "}
+                <span className={`inline-block px-2 py-1 text-xs rounded ${field.status === "AVAILABLE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{field.status}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Venue:</span> {field.venue?.venue_name || "..."}
+              </p>
+              {field.venue?.address && (
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Alamat:</span> {field.venue.address}
+                </p>
+              )}
+              {field.venue?.city && (
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Kota:</span> {field.venue.city}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lapangan</label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Lapangan</label>
+                <select
+                  name="type"
+                  value={form.type}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                >
+                  <option value="">Pilih Tipe</option>
+                  <option value="futsal">Futsal</option>
+                  <option value="basket">Basket</option>
+                  <option value="voli">Voli</option>
+                  <option value="badminton">Badminton</option>
+                  <option value="tenis">Tenis</option>
+                  <option value="padel">Padel</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                >
+                  <option value="AVAILABLE">Tersedia</option>
+                  <option value="MAINTENANCE">Perawatan</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Foto Lapangan (opsional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                />
+                {photoPreview && (
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-600 mb-1">Preview:</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photoPreview} alt="preview" className="w-full h-40 object-cover rounded" />
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save size={16} />
+                  <span>{saving ? "Menyimpan..." : "Simpan"}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setEditing(false);
+                    setFieldPhoto(null);
+                    setPhotoPreview(null);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                >
+                  <X size={16} />
+                  <span>Batal</span>
+                </button>
               </div>
             </div>
           )}
         </div>
-      ) : (
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lapangan</label>
-            <input name="name" value={form.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Lapangan</label>
-            <select name="type" value={form.type} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm">
-              <option value="">Pilih Tipe</option>
-              <option value="futsal">Futsal</option>
-              <option value="basket">Basket</option>
-              <option value="voli">Voli</option>
-              <option value="badminton">Badminton</option>
-              <option value="tenis">Tenis</option>
-              <option value="padel">Padel</option>
-              <option value="lainnya">Lainnya</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
-            >
-              <option value="AVAILABLE">Tersedia</option>
-              <option value="MAINTENANCE">Perawatan</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Foto Lapangan (opsional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
-            />
-            {photoPreview && (
-              <div className="mt-2">
-                <p className="text-xs text-gray-600 mb-1">Preview:</p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoPreview} alt="preview" className="w-full h-40 object-cover rounded" />
+      </div>
+
+      {/* Pricing Schemes Section - Full Width */}
+      {!editing && field.pricing_schemes && field.pricing_schemes.length > 0 && (
+        <div className="mt-8 pt-8 border-t">
+          <h2 className="text-lg font-bold text-[#0d47a1] mb-6">Skema Harga</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {field.pricing_schemes.map((scheme) => (
+              <div key={scheme.id} className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Durasi</p>
+                    <p className="text-2xl font-bold text-[#0d47a1]">
+                      {scheme.duration_minutes}
+                      <span className="text-sm font-normal text-gray-600"> menit</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-3 pb-3 border-b border-blue-200">
+                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Harga</p>
+                  <p className="text-xl font-bold text-[#0d47a1]">{scheme.price}</p>
+                </div>
+
+                {scheme.description && (
+                  <div>
+                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Keterangan</p>
+                    <p className="text-sm text-gray-700">{scheme.description}</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save size={16} />
-              <span>{saving ? "Menyimpan..." : "Simpan"}</span>
-            </button>
-            <button
-              onClick={() => {
-                setEditing(false);
-                setFieldPhoto(null);
-                setPhotoPreview(null);
-              }}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
-              <X size={16} />
-              <span>Batal</span>
-            </button>
+            ))}
           </div>
         </div>
       )}
