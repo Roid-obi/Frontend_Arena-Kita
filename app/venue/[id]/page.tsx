@@ -1,14 +1,11 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { use } from "react";
 import { Clock, MapPin, Building2, ExternalLink, ArrowLeft } from "lucide-react";
 import PhotoCarousel from "@/components/PhotoCarousel";
 import FieldList from "@/components/FieldList";
-import venuesData from "@/data/dummy/venues.json";
-import photosData from "@/data/dummy/venue_photos.json";
-import fieldsData from "@/data/dummy/fields.json";
 import bookingsData from "@/data/dummy/bookings.json";
-import pricingSchemesData from "@/data/dummy/pricing_schemes.json";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
@@ -17,38 +14,105 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+interface VenuaData {
+    id: number;
+    venue_name: string;
+    description: string;
+    address: string;
+    city: string;
+    gps_coordinate: string;
+    opening_time: string;
+    closing_time: string;
+    thumbnail: string;
+    photos: Array<{
+        id: number;
+        url: string;
+    }>;
+    fields: Array<{
+        id: number;
+        name: string;
+        type: string;
+        status: string;
+        photo_url: string;
+        pricing_schemes: Array<{
+            id: number;
+            duration_minutes: number;
+            price: string;
+            raw_price: number;
+            description: string;
+        }>;
+    }>;
+}
+
 export default function VenueDetailPage({ params }: PageProps) {
   const { id } = use(params);
-  const venueId = parseInt(id);
+  const [venue, setVenue] = useState<VenuaData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Get venue data
-  const venue = venuesData.find((v) => v.id === venueId);
+  useEffect(() => {
+      const fetchVenueData = async () => {
+          try {
+              setLoading(true);
+              const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${id}`);
+              const result = await response.json();
+
+              if (result.status === "success" && result.data) {
+                  setVenue(result.data);
+              }
+          } catch (error) {
+              console.log("Error fetching detail venue: ", error)
+          } finally {
+              setLoading(false);
+          }
+      }
+
+      fetchVenueData();
+
+  }, [id]);
+
+  if (loading) {
+      return (
+          <>
+              <Navbar />
+              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                  <p className="text-gray-600">Loading...</p>
+              </div>
+          </>
+      );
+  }
 
   if (!venue) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Venue Tidak Ditemukan</h1>
-          <p className="text-gray-600">Venue dengan ID {venueId} tidak tersedia.</p>
+          <p className="text-gray-600">Venue dengan ID {id} tidak tersedia.</p>
         </div>
       </div>
     );
   }
 
   // Get related photos
-  const photos = photosData.filter((p) => p.venue_id === venueId);
+  const photos = venue.photos || [];
 
   // Get related fields
-  const fields = fieldsData.filter((f) => f.venue_id === venueId);
+  const fields = venue.fields || [];
 
   // Parse GPS coordinate
-  const [latitude, longitude] = venue.gps_coordinate.split(",").map((c) => parseFloat(c.trim()));
+    let latitude = 0;
+    let longitude = 0;
+
+  if (venue.gps_coordinate !== null) {
+      [latitude, longitude] = venue.gps_coordinate.split(",").map((c) => parseFloat(c.trim()));
+  }
 
   // Format time
   const formatTime = (timeString: string): string => {
     const [hours, minutes] = timeString.split(":");
     return `${hours}:${minutes}`;
   };
+
+  const allPricingSchemes = fields.flatMap((field) => field.pricing_schemes || []);
 
   return (
     <>
@@ -146,7 +210,7 @@ export default function VenueDetailPage({ params }: PageProps) {
 
           {/* Field List */}
           <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 lg:p-8">
-            <FieldList fields={fields} bookings={bookingsData} pricingSchemes={pricingSchemesData} />
+            <FieldList fields={fields} bookings={bookingsData} pricingSchemes={allPricingSchemes} />
           </div>
         </div>
       </div>

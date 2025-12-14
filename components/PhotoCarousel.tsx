@@ -7,8 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface PhotoCarouselProps {
   photos: Array<{
     id: number;
-    photo_url: string;
-    created_at: string;
+    url: string;
   }>;
 }
 
@@ -39,7 +38,7 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
   return (
     <div className="relative w-full h-48 sm:h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden group">
       {/* Main Image */}
-      <Image src={getPhotoUrl(photos[currentIndex].photo_url)} alt={`Venue photo ${currentIndex + 1}`} fill className="object-cover" priority />
+      <Image src={getPhotoUrl(photos[currentIndex].url)} alt={`Venue photo ${currentIndex + 1}`} fill className="object-cover" priority />
 
       {/* Previous Button */}
       {photos.length > 1 && (
