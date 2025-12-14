@@ -46,6 +46,12 @@ interface VenueAPI {
     id: number;
     url: string;
   }[];
+  fields?: {
+    id: number;
+    name: string;
+    type: string;
+    status: string;
+  }[];
 }
 
 interface TransformedVenue {
@@ -85,8 +91,38 @@ const ArenaKita = () => {
             return `https://dev.api.arenakita.my.id/storage/${url}`;
           };
 
+          // Fetch field types for each venue
+          const fetchVenueDetails = async (venueId: number): Promise<string[]> => {
+            try {
+              const detailResponse = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${venueId}`);
+              const detailResult = await detailResponse.json();
+              if (detailResult.status === "success" && detailResult.data?.fields) {
+                const uniqueTypes = Array.from(
+                  new Set(
+                    detailResult.data.fields.map((field: { type: string }) => 
+                      field.type.charAt(0).toUpperCase() + field.type.slice(1).toLowerCase()
+                    )
+                  )
+                );
+                return uniqueTypes as string[];
+              }
+              return [];
+            } catch (error) {
+              console.error(`Error fetching venue ${venueId} details:`, error);
+              return [];
+            }
+          };
+
+          // Fetch details for all venues
+          const venuesWithFields = await Promise.all(
+            venuesData.map(async (venue) => {
+              const sportTypes = await fetchVenueDetails(venue.id);
+              return { ...venue, sportTypes };
+            })
+          );
+
           // Transform API data to match component structure
-          const transformedVenues = venuesData.slice(0, 5).map((venue) => ({
+          const transformedVenues = venuesWithFields.slice(0, 5).map((venue) => ({
             id: venue.id,
             name: venue.venue_name,
             location: venue.city,
@@ -95,10 +131,11 @@ const ArenaKita = () => {
               venue.photos && venue.photos.length > 0
                 ? venue.photos.map((photo) => normalizePhotoUrl(photo.url))
                 : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
+            sportTypes: venue.sportTypes,
             category: "Olahraga",
           }));
 
-          const transformedRecommendations = venuesData.map((venue) => ({
+          const transformedRecommendations = venuesWithFields.map((venue) => ({
             id: venue.id,
             name: venue.venue_name,
             location: venue.city,
@@ -107,6 +144,7 @@ const ArenaKita = () => {
               venue.photos && venue.photos.length > 0
                 ? venue.photos.map((photo) => normalizePhotoUrl(photo.url))
                 : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
+            sportTypes: venue.sportTypes,
           }));
 
           setVenues(transformedVenues);

@@ -10,6 +10,7 @@ interface VenueCardProps {
     location: string;
     hours: string;
     images: string[];
+    sportTypes?: string[];
   };
 }
 
@@ -45,6 +46,18 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${idx === currentImageIndex ? "opacity-100" : "opacity-0"}`}
             />
           ))}
+
+          {/* Sport Type Badges */}
+          {venue.sportTypes && venue.sportTypes.length > 0 && (
+            <div className="absolute top-3 right-3 flex flex-wrap gap-1.5 max-w-[60%] justify-end z-10">
+              {venue.sportTypes.slice(0, 3).map((sport, idx) => (
+                <span key={idx} className="px-2 py-1 bg-[#0d47a1]/90 backdrop-blur-sm text-white text-xs font-semibold rounded-md shadow-md">
+                  {sport}
+                </span>
+              ))}
+              {venue.sportTypes.length > 3 && <span className="px-2 py-1 bg-[#f97316]/90 backdrop-blur-sm text-white text-xs font-semibold rounded-md shadow-md">+{venue.sportTypes.length - 3}</span>}
+            </div>
+          )}
 
           {/* Image indicators */}
           {venue.images.length > 1 && (
