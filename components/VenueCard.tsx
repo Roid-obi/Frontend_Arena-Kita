@@ -58,7 +58,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
 
         {/* Card Info */}
         <div className="p-4 md:p-5">
-          <h3 className="font-bold text-base md:text-lg mb-2">{venue.name}</h3>
+          <h3 className="font-bold text-base md:text-lg mb-2 truncate" title={venue.name}>{venue.name}</h3>
           <div className="flex items-center text-gray-600 mb-2">
             <MapPin size={16} className="mr-1" />
             <span className="text-xs md:text-sm">{venue.location}</span>

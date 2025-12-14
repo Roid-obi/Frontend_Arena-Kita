@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -68,8 +68,36 @@ export default function Navbar() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showOwnerLoginModal, setShowOwnerLoginModal] = useState(false);
   const [showHamburger, setShowHamburger] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [venues, setVenues] = useState<{id: number; venue_name: string; city: string}[]>([]);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
   const { user, token, logout, isLoading } = useAuth();
   const pathname = usePathname();
+
+  // Fetch venues for autocomplete
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/venues");
+        const result = await response.json();
+        if (result.status === "success" && result.data) {
+          setVenues(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+      }
+    };
+    fetchVenues();
+  }, []);
+
+  // Filter venues based on search query
+  const filteredVenues = searchQuery.trim()
+    ? venues.filter((venue) =>
+        venue.venue_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        venue.city.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5)
+    : [];
 
   const getDashboardPath = () => {
     if (user?.role === "admin") return "/admin/dashboard";
@@ -99,12 +127,39 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Cari venue atau olahraga..."
-                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 border border-gray-200"
-                style={{ backgroundColor: "#f3f4f6", color: "#1a1a1a" }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowAutocomplete(true)}
+                onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300"
+                style={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
               />
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <Search size={20} />
               </div>
+              
+              {/* Autocomplete Dropdown */}
+              {showAutocomplete && filteredVenues.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                  {filteredVenues.map((venue) => (
+                    <Link
+                      key={venue.id}
+                      href={`/venue/${venue.id}`}
+                      className="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setShowAutocomplete(false);
+                      }}
+                    >
+                      <div className="font-medium text-gray-900">{venue.venue_name}</div>
+                      <div className="text-sm text-gray-500 flex items-center mt-1">
+                        <Search size={14} className="mr-1" />
+                        {venue.city}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -154,8 +209,11 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile hamburger */}
-            <div className="md:hidden">
+            {/* Mobile search and hamburger */}
+            <div className="md:hidden flex items-center gap-2">
+              <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="p-2 rounded-md text-[#0d47a1] transition">
+                <Search size={24} />
+              </button>
               <button onClick={() => setShowHamburger(!showHamburger)} className="p-2 rounded-md text-[#0d47a1] transition">
                 {showHamburger ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -163,6 +221,53 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Search Bar */}
+      {showMobileSearch && (
+        <div className="md:hidden w-full bg-white border-t border-gray-200 shadow-lg">
+          <div className="px-4 py-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Cari venue atau olahraga..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowAutocomplete(true)}
+                onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300"
+                style={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
+              />
+              <div className="absolute left-3 top-2.5 text-gray-400">
+                <Search size={20} />
+              </div>
+              
+              {/* Autocomplete Dropdown */}
+              {showAutocomplete && filteredVenues.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  {filteredVenues.map((venue) => (
+                    <Link
+                      key={venue.id}
+                      href={`/venue/${venue.id}`}
+                      className="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setShowAutocomplete(false);
+                        setShowMobileSearch(false);
+                      }}
+                    >
+                      <div className="font-medium text-gray-900">{venue.venue_name}</div>
+                      <div className="text-sm text-gray-500 flex items-center mt-1">
+                        <Search size={14} className="mr-1" />
+                        {venue.city}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Hamburger Menu (full width content) */}
       {showHamburger && (
@@ -188,26 +293,6 @@ export default function Navbar() {
                   <LayoutDashboard size={20} />
                   <span>Dashboard</span>
                 </Link>
-                <Link
-                  href="/user/dashboard/pesanan"
-                  onClick={() => setShowHamburger(false)}
-                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${
-                    pathname.includes("/pesanan") ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"
-                  }`}
-                >
-                  <ShoppingCart size={20} />
-                  <span>Keranjang / Pesanan</span>
-                </Link>
-                <Link
-                  href="/user/dashboard/account"
-                  onClick={() => setShowHamburger(false)}
-                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${
-                    pathname.includes("/account") ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"
-                  }`}
-                >
-                  <User size={20} />
-                  <span>Profil</span>
-                </Link>
                 <button
                   className="w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 text-red-600"
                   onClick={async () => {
@@ -221,6 +306,14 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <Link
+                  href="/"
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${pathname === "/" ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"}`}
+                >
+                  <Home size={20} />
+                  <span>Home</span>
+                </Link>
                 <button
                   onClick={() => {
                     setShowOwnerLoginModal(true);

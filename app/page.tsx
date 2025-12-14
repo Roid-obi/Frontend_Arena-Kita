@@ -227,8 +227,8 @@ const ArenaKita = () => {
 
       <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-8">
         {/* Kategori */}
-        <section className="mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
+        <section className="mb-1 md:mb-5">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2>
           <div className="relative -mx-4 md:-mx-8 lg:mx-0">
             <div className="px-0 md:px-8 lg:px-0">
               <div
@@ -277,7 +277,7 @@ const ArenaKita = () => {
         </section>
 
         {/* Terdekat */}
-        <section className="mb-8 md:mb-12">
+        <section className="mb-1 md:mb-10">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
           {loading ? (
             <div className="text-center py-12">
@@ -285,7 +285,7 @@ const ArenaKita = () => {
             </div>
           ) : (
             <div className="relative -mx-4 md:-mx-8 lg:mx-0">
-              <div className="px-4 md:px-8 lg:px-0">
+              <div className="lg:px-0">
                 <div
                   id="venue-container"
                   className="flex space-x-4 overflow-x-auto px-2 pb-6"
