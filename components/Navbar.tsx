@@ -70,7 +70,7 @@ export default function Navbar() {
   const [showHamburger, setShowHamburger] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [venues, setVenues] = useState<{id: number; venue_name: string; city: string}[]>([]);
+  const [venues, setVenues] = useState<{ id: number; venue_name: string; city: string }[]>([]);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const { user, token, logout, isLoading } = useAuth();
   const pathname = usePathname();
@@ -93,10 +93,7 @@ export default function Navbar() {
 
   // Filter venues based on search query
   const filteredVenues = searchQuery.trim()
-    ? venues.filter((venue) =>
-        venue.venue_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        venue.city.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 5)
+    ? venues.filter((venue) => venue.venue_name.toLowerCase().includes(searchQuery.toLowerCase()) || venue.city.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
     : [];
 
   const getDashboardPath = () => {
@@ -137,7 +134,7 @@ export default function Navbar() {
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <Search size={20} />
               </div>
-              
+
               {/* Autocomplete Dropdown */}
               {showAutocomplete && filteredVenues.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
@@ -240,7 +237,7 @@ export default function Navbar() {
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <Search size={20} />
               </div>
-              
+
               {/* Autocomplete Dropdown */}
               {showAutocomplete && filteredVenues.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
