@@ -1,8 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
@@ -37,7 +34,6 @@ const categories = Array.from(
 
 interface VenueAPI {
   id: number;
-  owner_id: number;
   venue_name: string;
   description: string;
   address: string;
@@ -45,26 +41,30 @@ interface VenueAPI {
   gps_coordinate: string | null;
   opening_time: string | null;
   closing_time: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  owner: {
+  thumbnail: string | null;
+  photos: {
     id: number;
-    full_name: string;
-    email: string;
-    role: string;
-  };
+    url: string;
+  }[];
+}
+
+interface TransformedVenue {
+  id: number;
+  name: string;
+  location: string;
+  hours: string;
+  images: string[];
+  category?: string;
 }
 
 const ArenaKita = () => {
   const [bannerIndex, setBannerIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [venues, setVenues] = useState<any[]>([]);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [venues, setVenues] = useState<TransformedVenue[]>([]);
+  const [recommendations, setRecommendations] = useState<TransformedVenue[]>([]);
   const [recPage, setRecPage] = useState(1);
   const recPerPage = 9;
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   // Fetch venues from API
   useEffect(() => {
@@ -77,13 +77,24 @@ const ArenaKita = () => {
         if (result.status === "success" && result.data) {
           const venuesData: VenueAPI[] = result.data;
 
+          // Helper to normalize photo URLs
+          const normalizePhotoUrl = (url: string): string => {
+            if (url.startsWith("http://") || url.startsWith("https://")) {
+              return url;
+            }
+            return `https://dev.api.arenakita.my.id/storage/${url}`;
+          };
+
           // Transform API data to match component structure
           const transformedVenues = venuesData.slice(0, 5).map((venue) => ({
             id: venue.id,
             name: venue.venue_name,
             location: venue.city,
             hours: venue.opening_time && venue.closing_time ? `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}` : "Hubungi Venue",
-            images: [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
+            images:
+              venue.photos && venue.photos.length > 0
+                ? venue.photos.map((photo) => normalizePhotoUrl(photo.url))
+                : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
             category: "Olahraga",
           }));
 
@@ -92,7 +103,10 @@ const ArenaKita = () => {
             name: venue.venue_name,
             location: venue.city,
             hours: venue.opening_time && venue.closing_time ? `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}` : "Hubungi Venue",
-            images: [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
+            images:
+              venue.photos && venue.photos.length > 0
+                ? venue.photos.map((photo) => normalizePhotoUrl(photo.url))
+                : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
           }));
 
           setVenues(transformedVenues);
@@ -339,7 +353,7 @@ const ArenaKita = () => {
                       <button
                         key={page}
                         onClick={() => handleRecPageChange(page)}
-                        className={`min-w-[40px] h-10 px-3 rounded-full border text-sm font-semibold transition shadow-sm ${
+                        className={`min-w-10 h-10 px-3 rounded-full border text-sm font-semibold transition shadow-sm ${
                           isActive ? "bg-[#0d47a1] text-white border-[#0d47a1]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                         }`}
                       >

@@ -114,12 +114,12 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-2">
               {user && token ? (
                 <>
-                  <button className="p-2 rounded-lg  hover:bg-[#0d48a188] transition text-[#0d47a1]">
+                  {/* <button className="p-2 rounded-lg  hover:bg-[#0d48a154] transition text-[#0d47a1]">
                     <ShoppingCart size={24} />
-                  </button>
+                  </button> */}
 
                   <div className="relative">
-                    <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="p-2 rounded-lg hover:bg-[#0d48a188] transition text-[#0d47a1]">
+                    <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="p-2 rounded-lg hover:bg-[#0d48a135] transition text-[#0d47a1]">
                       <User size={24} />
                     </button>
 

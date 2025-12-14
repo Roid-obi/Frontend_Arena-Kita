@@ -151,10 +151,10 @@ export default function OwnerPesanan() {
 
       const result = await response.json();
 
-      if (response.ok && result.status === "success") {
-        // Update booking status locally
-        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status: "CONFIRMED" } : b)));
-        alert("Booking berhasil disetujui");
+      if (response.ok && result.status === "success" && result.data) {
+        // Reflect server response (e.g., status CONFIRMED)
+        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, ...result.data } : b)));
+        alert(result.message || "Booking berhasil disetujui");
       } else {
         throw new Error(result.message || "Gagal menyetujui booking");
       }
@@ -187,10 +187,11 @@ export default function OwnerPesanan() {
 
       const result = await response.json();
 
-      if (response.ok && result.status === "success") {
-        // Update booking status locally
-        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status: "REJECTED" } : b)));
-        alert("Booking berhasil ditolak");
+      if (response.ok && result.status === "success" && result.data) {
+        // If API returns updated booking data, merge it; else set to REJECTED
+        const nextStatus = result.data?.status || "REJECTED";
+        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status: nextStatus } : b)));
+        alert(result.message || "Booking berhasil ditolak");
       } else {
         throw new Error(result.message || "Gagal menolak booking");
       }
@@ -297,6 +298,15 @@ export default function OwnerPesanan() {
                                 {actionLoading === b.id ? "..." : "Reject"}
                               </button>
                             </>
+                          )}
+                          {b.status === "CONFIRMED" && (
+                            <button
+                              onClick={() => handleReject(b.id)}
+                              disabled={actionLoading === b.id}
+                              className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {actionLoading === b.id ? "..." : "Reject"}
+                            </button>
                           )}
                         </div>
                       </td>
