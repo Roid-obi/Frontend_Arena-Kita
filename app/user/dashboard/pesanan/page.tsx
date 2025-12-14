@@ -1,194 +1,396 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
-import bookingsData from "@/data/dummy/bookings.json";
-
-interface RawBooking {
-  id: number;
-  booking_date: string;
-  start_time: string;
-  end_time: string;
-  total_price: number;
-  booking_status: string;
-  created_at: string;
-}
-
-interface VenueInfo {
-  venue_name: string;
-  field_name: string;
-  sport_type: string;
-}
+import Cookies from "js-cookie";
 
 interface UserBooking {
-  id: number;
-  booking_date: string;
-  start_time: string;
-  end_time: string;
-  total_price: string;
-  raw_total_price: number;
-  status: string;
-  created_at: string;
-  venue_info: VenueInfo;
+    id: number;
+    pricing_scheme_id: number;
+    booking_date: string;
+    start_time: string;
+    end_time: string;
+    total_price: string;
+    booking_status: string;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+}
+
+interface ApiResponse {
+    status: string;
+    message: string;
+    data: UserBooking[];
+}
+
+interface PaymentMethod {
+    id: string;
+    name: string;
+    logo: string;
+}
+
+interface TransactionResponse {
+    status: string;
+    message: string;
+    data: {
+        transaction: {
+            booking_id: number;
+            payment_method: string;
+            payment_status: string;
+        };
+        amount: string;
+        qr_image_url: string;
+    };
 }
 
 export default function DashboardPesanan() {
-  const [bookings, setBookings] = useState<UserBooking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+    const router = useRouter();
+    const [bookings, setBookings] = useState<UserBooking[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showQrisModal, setShowQrisModal] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<UserBooking | null>(null);
+    const [selectedPayment, setSelectedPayment] = useState("");
+    const [qrisUrl, setQrisUrl] = useState("");
+    const [processingPayment, setProcessingPayment] = useState(false);
+    const itemsPerPage = 5;
 
-  useEffect(() => {
-    const loadDummyBookings = async () => {
-      try {
-        // Data venue/lapangan dummy untuk melengkapi tampilan
-        const dummyVenues: VenueInfo[] = [
-          { venue_name: "Arena Futsal A", field_name: "Lapangan 1", sport_type: "Futsal" },
-          { venue_name: "GOR Serbaguna B", field_name: "Court Utama", sport_type: "Badminton" },
-          { venue_name: "Soccer Hub C", field_name: "Pitch 2", sport_type: "Sepak Bola" },
-          { venue_name: "Basket Center D", field_name: "Hall 3", sport_type: "Basket" },
-        ];
+    const paymentMethods: PaymentMethod[] = [
+        { id: "GoPay", name: "GoPay", logo: "💳" },
+        { id: "OVO", name: "OVO", logo: "💰" },
+        { id: "Dana", name: "Dana", logo: "💵" },
+    ];
 
-        const mapped: UserBooking[] = (bookingsData as RawBooking[]).map((b, idx) => {
-          const venue = dummyVenues[idx % dummyVenues.length];
-          const rawStatus = b.booking_status.toLowerCase();
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                setLoading(true);
+                const token = Cookies.get("token");
+                if (!token) {
+                    return;
+                }
 
-          // Petakan status legacy ke status tampilan baru
-          let status = rawStatus;
-          if (rawStatus === "pending") status = idx % 2 === 0 ? "menunggu pembayaran" : "menunggu konfirmasi";
-          else if (rawStatus === "confirmed") status = "terkonfirmasi";
-          else if (rawStatus === "canceled") status = "pesanan gagal";
+                const response = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
 
-          return {
-            id: b.id,
-            booking_date: b.booking_date,
-            start_time: b.start_time,
-            end_time: b.end_time,
-            total_price: `Rp ${Number(b.total_price).toLocaleString("id-ID")}`,
-            raw_total_price: Number(b.total_price),
-            status,
-            created_at: b.created_at,
-            venue_info: venue,
-          };
-        });
+                if (!response.ok) {
+                    throw new Error(`Gagal mengambil data pesanan: ${response.status}`);
+                }
 
-        setBookings(mapped);
-      } catch (err) {
-        console.error("Error loading dummy bookings:", err);
-        setError("Terjadi kesalahan saat memuat data pesanan");
-      } finally {
-        setLoading(false);
-      }
+                const result: ApiResponse = await response.json();
+
+                if (result.status === "success" && result.data) {
+                    setBookings(result.data);
+                } else {
+                    setError(result.message || "Terjadi kesalahan");
+                }
+            } catch (err) {
+                console.error("Error fetching bookings:", err);
+                setError("Terjadi kesalahan saat mengambil data pesanan");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBookings();
+    }, []);
+
+    const handlePayment = (booking: UserBooking) => {
+        setSelectedBooking(booking);
+        setShowPaymentModal(true);
+        setSelectedPayment("");
+        setError("");
     };
 
-    loadDummyBookings();
-  }, []);
+    const handleConfirmPayment = async () => {
+        if (!selectedBooking || !selectedPayment) {
+            return;
+        }
 
-  // Filter bookings berdasarkan search query
-  const filteredBookings = bookings.filter(
-    (b) =>
-      b.id.toString().includes(searchQuery) ||
-      b.venue_info.venue_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.venue_info.field_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.booking_date.includes(searchQuery)
-  );
+        try {
+            setProcessingPayment(true);
+            const token = Cookies.get("token");
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentBookings = filteredBookings.slice(startIndex, endIndex);
+            const response = await fetch("https://dev.api.arenakita.my.id/api/v1/transactions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    booking_id: selectedBooking.id,
+                    payment_method: selectedPayment,
+                }),
+            });
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
+            if (!response.ok) {
+                throw new Error("Gagal membuat transaksi");
+            }
 
-  const getStatusColor = (status: string) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes("pembayaran")) return "bg-blue-100 text-blue-800";
-    if (statusLower.includes("konfirmasi")) return "bg-yellow-100 text-yellow-800";
-    if (statusLower.includes("terkonfirmasi")) return "bg-green-100 text-green-800";
-    if (statusLower.includes("selesai")) return "bg-emerald-100 text-emerald-800";
-    if (statusLower.includes("gagal")) return "bg-red-100 text-red-800";
-    return "bg-gray-100 text-gray-800";
-  };
+            const result: TransactionResponse = await response.json();
 
-  const getStatusLabel = (status: string) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes("pembayaran")) return "Menunggu Pembayaran";
-    if (statusLower.includes("konfirmasi")) return "Menunggu Konfirmasi";
-    if (statusLower.includes("terkonfirmasi")) return "Terkonfirmasi";
-    if (statusLower.includes("selesai")) return "Selesai";
-    if (statusLower.includes("gagal")) return "Pesanan Gagal";
-    return status;
-  };
+            if (result.status === "success" && result.data.qr_image_url) {
+                setQrisUrl(result.data.qr_image_url);
+                setShowPaymentModal(false);
+                setShowQrisModal(true);
+            } else {
+                setError(result.message || "Gagal mendapatkan QRIS");
+            }
+        } catch (err) {
+            console.error("Error creating transaction:", err);
+            setError("Terjadi kesalahan saat memproses pembayaran");
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
+    const closeModals = () => {
+        setShowPaymentModal(false);
+        setShowQrisModal(false);
+        setSelectedBooking(null);
+        setSelectedPayment("");
+        setQrisUrl("");
+    };
 
-  return (
-    <section>
-      <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Pesanan Saya</h1>
-      <p className="text-gray-600 mb-4">Status pesanan dan riwayat pemesanan Anda.</p>
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout;
 
-      {error && <div className="mb-4 rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
+        if (showQrisModal && selectedBooking) {
+            intervalId = setInterval(async () => {
+                try {
+                    const token = Cookies.get("token");
+                    const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/bookings/${selectedBooking.id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
 
-      <div className="mb-4 w-full md:w-64">
-        <SearchBar value={searchQuery} onChange={handleSearch} placeholder="Cari pesanan..." />
-      </div>
+                    if (response.ok) {
+                        const result = await response.json();
+                        const paymentStatus = result.data?.payment?.payment_status;
+                        
+                        if (paymentStatus === 'SUCCESS') {
+                            clearInterval(intervalId);
+                            router.push(`/user/dashboard/pesanan/${selectedBooking.id}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking payment status", error);
+                }
+            }, 3000);
+        }
 
-      <div className="bg-white shadow-md rounded-lg">
-        {loading ? (
-          <div className="flex items-center justify-center p-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#0d47a1]" />
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lapangan</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentBookings.map((b) => (
-                    <tr key={b.id}>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.id}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{b.venue_info.venue_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{b.venue_info.field_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{b.booking_date}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {b.start_time} - {b.end_time}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.total_price}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(b.status)}`}>{getStatusLabel(b.status)}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredBookings.length === 0 && <div className="p-4 text-center text-gray-500">Tidak ada pesanan yang cocok dengan pencarian</div>}
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [showQrisModal, selectedBooking, router]);
+
+    const filteredBookings = bookings.filter(
+        (b) =>
+            b.id.toString().includes(searchQuery) ||
+            b.booking_date.includes(searchQuery) ||
+            b.booking_status.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentBookings = filteredBookings.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    const getStatusColor = (status: string) => {
+        const statusUpper = status.toUpperCase();
+        if (statusUpper.includes("WAITING")) return "bg-blue-100 text-blue-800";
+        if (statusUpper.includes("PENDING")) return "bg-yellow-100 text-yellow-800";
+        if (statusUpper.includes("CONFIRMED")) return "bg-green-100 text-green-800";
+        if (statusUpper.includes("FAILED")) return "bg-red-100 text-red-800";
+        return "bg-gray-100 text-gray-800";
+    };
+
+    const getStatusLabel = (status: string) => {
+        const statusUpper = status.toUpperCase();
+        if (statusUpper.includes("PENDING")) return "Menunggu Pembayaran";
+        if (statusUpper.includes("KONFIRMASI")) return "Menunggu Konfirmasi";
+        if (statusUpper.includes("TERKONFIRMASI")) return "Terkonfirmasi";
+        if (statusUpper.includes("CONFIRMED")) return "Sukses";
+        if (statusUpper.includes("FAILED")) return "Pesanan Gagal";
+        return status;
+    };
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+    };
+
+    return (
+        <section>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#0d47a1] mb-3">Pesanan Saya</h1>
+            <p className="text-gray-600 mb-4">Status pesanan dan riwayat pemesanan Anda.</p>
+
+            {error && <div className="mb-4 rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{error}</div>}
+
+            <div className="mb-4 w-full md:w-64">
+                <SearchBar value={searchQuery} onChange={handleSearch} placeholder="Cari pesanan..." />
             </div>
-            {filteredBookings.length > 0 && filteredBookings.length > itemsPerPage && (
-              <div className="px-4 py-3 border-t border-gray-200">
-                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-              </div>
+
+            <div className="bg-white shadow-md rounded-lg">
+                {loading ? (
+                    <div className="flex items-center justify-center p-8">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#0d47a1]" />
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                {currentBookings.map((b) => (
+                                    <tr key={b.id}>
+                                        <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.id}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-700">{b.booking_date}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-700">
+                                            {b.start_time} - {b.end_time}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.total_price}</td>
+                                        <td className="px-4 py-3 text-sm">
+                                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(b.booking_status)}`}>
+                                              {getStatusLabel(b.booking_status)}
+                                          </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-gray-700">{b.created_at}</td>
+                                        <td className="px-4 py-3 text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    href={`/user/dashboard/pesanan/${b.id}`}
+                                                    className="bg-gray-500 text-white px-3 py-1 rounded text-xs font-medium hover:bg-gray-600 transition"
+                                                >
+                                                    Detail
+                                                </Link>
+                                                {b.booking_status.toUpperCase() === "PENDING" && (
+                                                    <button
+                                                        onClick={() => handlePayment(b)}
+                                                        className="bg-[#0d47a1] text-white px-3 py-1 rounded text-xs font-medium hover:bg-[#0a3d8f] transition"
+                                                    >
+                                                        Bayar
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                            {filteredBookings.length === 0 && (
+                                <div className="p-4 text-center text-gray-500">
+                                    {searchQuery ? "Tidak ada pesanan yang cocok dengan pencarian" : "Belum ada pesanan"}
+                                </div>
+                            )}
+                        </div>
+                        {filteredBookings.length > 0 && filteredBookings.length > itemsPerPage && (
+                            <div className="px-4 py-3 border-t border-gray-200">
+                                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Payment Method Modal */}
+            {showPaymentModal && selectedBooking && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h2 className="text-xl font-bold text-[#0d47a1] mb-4">Pilih Metode Pembayaran</h2>
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-600 mb-2">Total Pembayaran:</p>
+                            <p className="text-2xl font-bold text-gray-800">{selectedBooking.total_price}</p>
+                        </div>
+                        <div className="space-y-3 mb-6">
+                            {paymentMethods.map((method) => (
+                                <div
+                                    key={method.id}
+                                    onClick={() => setSelectedPayment(method.id)}
+                                    className={`border rounded-lg p-3 cursor-pointer transition ${
+                                        selectedPayment === method.id
+                                            ? "border-[#0d47a1] bg-blue-50"
+                                            : "border-gray-300 hover:border-gray-400"
+                                    }`}
+                                >
+                                    <div className="flex items-center">
+                                        <span className="text-2xl mr-3">{method.logo}</span>
+                                        <span className="font-medium text-gray-700">{method.name}</span>
+                                        {selectedPayment === method.id && (
+                                            <span className="ml-auto text-[#0d47a1]">✓</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={closeModals}
+                                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleConfirmPayment}
+                                disabled={!selectedPayment || processingPayment}
+                                className="flex-1 bg-[#0d47a1] text-white px-4 py-2 rounded hover:bg-[#0a3d8f] transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                {processingPayment ? "Memproses..." : "Konfirmasi"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
-          </>
-        )}
-      </div>
-    </section>
-  );
+
+            {/* QRIS Modal */}
+            {showQrisModal && qrisUrl && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h2 className="text-xl font-bold text-[#0d47a1] mb-4">Scan QRIS untuk Membayar</h2>
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-600 mb-2">Total Pembayaran:</p>
+                            <p className="text-2xl font-bold text-gray-800">{selectedBooking?.total_price}</p>
+                        </div>
+                        <div className="flex justify-center mb-4 bg-gray-100 p-4 rounded-lg">
+                            <img src={qrisUrl} alt="QRIS Code" className="max-w-full h-auto" />
+                        </div>
+                        <p className="text-sm text-gray-600 text-center mb-4">
+                            Scan kode QR di atas menggunakan aplikasi {selectedPayment}
+                        </p>
+                        <button
+                            onClick={closeModals}
+                            className="w-full bg-[#0d47a1] text-white px-4 py-2 rounded hover:bg-[#0a3d8f] transition"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            )}
+        </section>
+    );
 }
