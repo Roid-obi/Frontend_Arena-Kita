@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, Settings, Menu, X } from "lucide-react";
+import { Home, ClipboardList, Settings, Menu, X, LayoutDashboard } from "lucide-react";
 
 export default function UserSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   const menu = [
-    { href: "/user/dashboard", label: "Info Umum", icon: Home },
+    { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/user/dashboard/pesanan", label: "Pesanan", icon: ClipboardList },
     { href: "/user/dashboard/account", label: "Akun", icon: Settings },
   ];

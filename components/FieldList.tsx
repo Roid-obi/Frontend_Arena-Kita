@@ -51,6 +51,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
   const [expandedFieldId, setExpandedFieldId] = useState<number | null>(null);
   const [selectedPricingScheme, setSelectedPricingScheme] = useState<{ [fieldId: number]: number | null }>({});
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ [fieldId: number]: string | null }>({});
+  const [selectedDate, setSelectedDate] = useState<{ [fieldId: number]: string | null }>({});
   const [isBooking, setIsBooking] = useState(false);
 
   const getFieldPhotoUrl = (url: string) => {
@@ -123,9 +124,10 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     const handleBookNow = async (field: Field) => {
         const selectedSchemeId = selectedPricingScheme[field.id];
         const selectedTime = selectedTimeSlot[field.id];
+      const bookingDateInput = selectedDate[field.id];
 
-        if (!selectedSchemeId || !selectedTime) {
-            alert("Silakan pilih paket harga dan jam booking terlebih dahulu!");
+      if (!selectedSchemeId || !selectedTime) {
+        alert("Silakan pilih tanggal, paket harga, dan jam booking terlebih dahulu!");
             return;
         }
 
@@ -141,7 +143,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
             }
 
             const endTime = calculateEndTime(selectedTime, selectedScheme.duration_minutes);
-            const bookingDate = new Date().toISOString().split('T')[0];
+            const bookingDate = bookingDateInput || new Date().toISOString().split('T')[0];
 
             const bookingData = {
                 pricing_scheme_id: selectedSchemeId,
@@ -173,6 +175,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
 
             setSelectedPricingScheme(prev => ({ ...prev, [field.id]: null }));
             setSelectedTimeSlot(prev => ({ ...prev, [field.id]: null }));
+            setSelectedDate(prev => ({ ...prev, [field.id]: null }));
 
             window.location.reload();
 
@@ -238,6 +241,17 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                   <div className="border-t border-gray-200 p-4 md:p-5 bg-gray-50">
                     {field.status === "AVAILABLE" ? (
                       <div>
+                        {/* Booking Date Picker */}
+                        <div className="mb-4">
+                          <label className="block text-sm md:text-base font-semibold text-[#1a1a1a] mb-2">Pilih Tanggal Booking:</label>
+                          <input
+                            type="date"
+                            value={selectedDate[field.id] || ""}
+                            min={new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setSelectedDate((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                            className="px-3 py-2 border rounded-lg text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0d47a1] focus:border-[#0d47a1]"
+                          />
+                        </div>
                         {/* Pricing Breakdown */}
                         {pricing.length > 0 && (
                             <div className="mb-4">

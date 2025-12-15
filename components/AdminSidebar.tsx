@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, Grid, Users, Settings, Menu, X } from "lucide-react";
+import { Home, ClipboardList, Grid, Users, Settings, Menu, X, LayoutDashboard } from "lucide-react";
 
 export default function AdminSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   const menu = [
-    { href: "/admin/dashboard", label: "Info Umum", icon: Home },
+    { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/dashboard/pesanan", label: "Kelola Pesanan", icon: ClipboardList },
     { href: "/admin/dashboard/venue", label: "Kelola Venue", icon: Grid },
     { href: "/admin/dashboard/user", label: "Kelola User", icon: Users },
