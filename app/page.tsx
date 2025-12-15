@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
-import fieldsData from "@/data/dummy/fields.json";
 import Footer from "@/components/Footer";
 import Banner1 from "../assets/image/Banner1.png";
 import Banner2 from "../assets/image/Banner2.png";
@@ -17,20 +16,12 @@ const banners = [
   { id: 3, title: "Harga Terjangkau", subtitle: "Dapatkan harga terbaik untuk lapangan impianmu", image: Banner3 },
 ];
 
-// Extract unique sport types from fields data to create categories
-const categories = Array.from(
-  new Map(
-    fieldsData.map((field) => [
-      field.sport_type,
-      {
-        id: fieldsData.findIndex((f) => f.sport_type === field.sport_type) + 1,
-        name: field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase(),
-        icon: "⚽",
-        image: `https://placehold.co/300x200/0d47a1/ffffff?text=${field.sport_type.charAt(0) + field.sport_type.slice(1).toLowerCase()}`,
-      },
-    ])
-  ).values()
-);
+// Categories will be loaded from API /home
+interface CategoryItem {
+  id: number;
+  name: string;
+  image: string;
+}
 
 interface VenueAPI {
   id: number;
@@ -52,6 +43,7 @@ interface VenueAPI {
     type: string;
     status: string;
   }[];
+  sportTypes?: string[];
 }
 
 interface TransformedVenue {
@@ -68,20 +60,25 @@ const ArenaKita = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [venues, setVenues] = useState<TransformedVenue[]>([]);
   const [recommendations, setRecommendations] = useState<TransformedVenue[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [recPage, setRecPage] = useState(1);
   const recPerPage = 9;
   const [loading, setLoading] = useState(true);
 
-  // Fetch venues from API
+  // Fetch home data from API
   useEffect(() => {
-    const fetchVenues = async () => {
+    const fetchHome = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/venues");
+        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/home");
         const result = await response.json();
 
         if (result.status === "success" && result.data) {
-          const venuesData: VenueAPI[] = result.data;
+          const homeData = result.data as {
+            categories: string[];
+            nearest: VenueAPI[];
+            recommendations: VenueAPI[];
+          };
 
           // Helper to normalize photo URLs
           const normalizePhotoUrl = (url: string): string => {
@@ -91,19 +88,13 @@ const ArenaKita = () => {
             return `https://dev.api.arenakita.my.id/storage/${url}`;
           };
 
-          // Fetch field types for each venue
+          // Fetch field types for each venue (for badges)
           const fetchVenueDetails = async (venueId: number): Promise<string[]> => {
             try {
               const detailResponse = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${venueId}`);
               const detailResult = await detailResponse.json();
               if (detailResult.status === "success" && detailResult.data?.fields) {
-                const uniqueTypes = Array.from(
-                  new Set(
-                    detailResult.data.fields.map((field: { type: string }) => 
-                      field.type.charAt(0).toUpperCase() + field.type.slice(1).toLowerCase()
-                    )
-                  )
-                );
+                const uniqueTypes = Array.from(new Set(detailResult.data.fields.map((field: { type: string }) => field.type.charAt(0).toUpperCase() + field.type.slice(1).toLowerCase())));
                 return uniqueTypes as string[];
               }
               return [];
@@ -113,16 +104,31 @@ const ArenaKita = () => {
             }
           };
 
-          // Fetch details for all venues
-          const venuesWithFields = await Promise.all(
-            venuesData.map(async (venue) => {
+          // Build categories from API
+          const categoryItems: CategoryItem[] = (homeData.categories || []).map((name, idx) => ({
+            id: idx + 1,
+            name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(),
+            image: `https://placehold.co/300x200/0d47a1/ffffff?text=${encodeURIComponent(name)}`,
+          }));
+          setCategories(categoryItems);
+
+          // Fetch sport types for nearest and recommendations
+          const nearestWithFields = await Promise.all(
+            (homeData.nearest || []).map(async (venue) => {
+              const sportTypes = await fetchVenueDetails(venue.id);
+              return { ...venue, sportTypes };
+            })
+          );
+
+          const recommendationsWithFields = await Promise.all(
+            (homeData.recommendations || []).map(async (venue) => {
               const sportTypes = await fetchVenueDetails(venue.id);
               return { ...venue, sportTypes };
             })
           );
 
           // Transform API data to match component structure
-          const transformedVenues = venuesWithFields.slice(0, 5).map((venue) => ({
+          const transformedVenues = nearestWithFields.slice(0, 5).map((venue) => ({
             id: venue.id,
             name: venue.venue_name,
             location: venue.city,
@@ -135,7 +141,7 @@ const ArenaKita = () => {
             category: "Olahraga",
           }));
 
-          const transformedRecommendations = venuesWithFields.map((venue) => ({
+          const transformedRecommendations = recommendationsWithFields.map((venue) => ({
             id: venue.id,
             name: venue.venue_name,
             location: venue.city,
@@ -152,13 +158,13 @@ const ArenaKita = () => {
           setRecPage(1);
         }
       } catch (error) {
-        console.error("Error fetching venues:", error);
+        console.error("Error fetching home data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchVenues();
+    fetchHome();
   }, []);
 
   const nextBanner = () => {
@@ -271,7 +277,7 @@ const ArenaKita = () => {
             <div className="px-0 md:px-8 lg:px-0">
               <div
                 id="category-container"
-                className="flex space-x-4 overflow-x-auto px-2 pb-6"
+                className="flex space-x-4 overflow-x-auto px-4 md:px-0 pb-6"
                 style={{
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
@@ -326,7 +332,7 @@ const ArenaKita = () => {
               <div className="lg:px-0">
                 <div
                   id="venue-container"
-                  className="flex space-x-4 overflow-x-auto px-2 pb-6"
+                  className="flex space-x-4 overflow-x-auto px-4 md:px-0 pb-6"
                   style={{
                     scrollbarWidth: "none",
                     msOverflowStyle: "none",

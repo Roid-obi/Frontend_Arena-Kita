@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home, X } from "lucide-react";
+import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home, X, Building2, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import LoginModal from "./LoginModal";
@@ -72,6 +72,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [venues, setVenues] = useState<{ id: number; venue_name: string; city: string }[]>([]);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const { user, token, logout, isLoading } = useAuth();
   const pathname = usePathname();
 
@@ -90,6 +91,34 @@ export default function Navbar() {
     };
     fetchVenues();
   }, []);
+
+  // Fetch user profile for photo
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!token) {
+        setProfilePhotoUrl(null);
+        return;
+      }
+      try {
+        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const result = await response.json();
+        if (result.status === "success" && result.data?.profile_photo_url) {
+          const photoUrl = result.data.profile_photo_url.startsWith("http") ? result.data.profile_photo_url : `https://dev.api.arenakita.my.id/storage/${result.data.profile_photo_url}`;
+          setProfilePhotoUrl(photoUrl);
+        } else {
+          setProfilePhotoUrl(null);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setProfilePhotoUrl(null);
+      }
+    };
+    fetchProfile();
+  }, [token]);
 
   // Filter venues based on search query
   const filteredVenues = searchQuery.trim()
@@ -123,12 +152,12 @@ export default function Navbar() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Cari venue atau olahraga..."
+                placeholder="Cari venue atau lokasinya..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowAutocomplete(true)}
                 onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
-                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300"
+                className="w-full h-10 px-4 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300"
                 style={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
               />
               <div className="absolute left-3 top-2.5 text-gray-400">
@@ -164,6 +193,17 @@ export default function Navbar() {
           <div className="flex items-center">
             {/* Desktop buttons */}
             <div className="hidden md:flex items-center space-x-2">
+              {/* Venues Link */}
+              <Link
+                href="/venues"
+                className={`flex items-center gap-2 text-sm font-semibold h-9 px-4 rounded-lg transition-all ${
+                  pathname === "/venues" ? "text-white bg-[#0d47a1] shadow-md" : "text-gray-700 hover:text-[#0d47a1] hover:bg-blue-50 border border-gray-200"
+                }`}
+              >
+                <Building2 size={18} />
+                <span>Semua Venue</span>
+              </Link>
+
               {user && token ? (
                 <>
                   {/* <button className="p-2 rounded-lg  hover:bg-[#0d48a154] transition text-[#0d47a1]">
@@ -171,8 +211,26 @@ export default function Navbar() {
                   </button> */}
 
                   <div className="relative">
-                    <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="p-2 rounded-lg hover:bg-[#0d48a135] transition text-[#0d47a1]">
-                      <User size={24} />
+                    <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-2 px-2 py-[3px] rounded-lg hover:bg-gray-100 transition ">
+                      {profilePhotoUrl ? (
+                        <img
+                          src={profilePhotoUrl}
+                          alt="Profile"
+                          className="w-8 h-8 rounded-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`w-8 h-8 rounded-full bg-gradient-to-br from-[#0d47a1] to-[#1565c0] flex items-center justify-center text-white font-semibold text-sm ${
+                          profilePhotoUrl ? "hidden" : ""
+                        }`}
+                      >
+                        {user?.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
+                      </div>
+                      <ChevronDown size={16} className="text-gray-600" />
                     </button>
 
                     {showProfileMenu && (
@@ -194,7 +252,7 @@ export default function Navbar() {
                     onClick={() => setShowOwnerLoginModal(true)}
                     className="border-2 border-[#0d47a1] hover:bg-[#0d47a1] text-[#0d47a1] hover:text-white px-4 py-[6px] rounded-md transition duration-200"
                   >
-                    Masuk Owner
+                    Owner Venue
                   </button>
                   <button onClick={() => setShowLoginModal(true)} className="bg-[#0d47a1] hover:bg-[#083055] text-white px-4 py-2 rounded-md transition duration-200">
                     Masuk
@@ -281,6 +339,14 @@ export default function Navbar() {
                   <span>Home</span>
                 </Link>
                 <Link
+                  href="/venues"
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${pathname === "/venues" ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"}`}
+                >
+                  <Search size={20} />
+                  <span>Venues</span>
+                </Link>
+                <Link
                   href={dashboardPath}
                   onClick={() => setShowHamburger(false)}
                   className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${
@@ -311,6 +377,14 @@ export default function Navbar() {
                   <Home size={20} />
                   <span>Home</span>
                 </Link>
+                <Link
+                  href="/venues"
+                  onClick={() => setShowHamburger(false)}
+                  className={`w-full text-left px-4 py-2 rounded-md hover:bg-gray-100 flex items-center gap-3 ${pathname === "/venues" ? "bg-blue-50 text-[#0d47a1] font-medium" : "text-gray-700"}`}
+                >
+                  <Search size={20} />
+                  <span>Venues</span>
+                </Link>
                 <button
                   onClick={() => {
                     setShowOwnerLoginModal(true);
@@ -318,7 +392,7 @@ export default function Navbar() {
                   }}
                   className="w-full block px-4 py-[6px] border-2 border-[#0d47a1] hover:bg-[#0d47a1] text-[#0d47a1] hover:text-white rounded-md transition duration-200"
                 >
-                  Masuk Owner
+                  Owner Venue
                 </button>
                 <button
                   onClick={() => {
