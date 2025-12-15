@@ -24,6 +24,12 @@ interface UserStats {
   total_spending?: string;
 }
 
+interface Booking {
+  booking_status: string;
+  raw_total_price?: string;
+  total_price?: string;
+}
+
 export default function UserDashboardHome() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -72,13 +78,13 @@ export default function UserDashboardHome() {
 
             // Calculate stats from bookings data
             const totalBookings = bookings.length;
-            const pendingCount = bookings.filter((b: any) => b.booking_status?.toUpperCase() === "PENDING").length;
-            const completedCount = bookings.filter((b: any) => b.booking_status?.toUpperCase() === "COMPLETED").length;
-            const failedCount = bookings.filter((b: any) => b.booking_status?.toUpperCase() === "FAILED").length;
-            const cancelledCount = bookings.filter((b: any) => b.booking_status?.toUpperCase() === "CANCELLED").length;
+            const pendingCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "PENDING").length;
+            const completedCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "COMPLETED").length;
+            const failedCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "FAILED").length;
+            const cancelledCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "CANCELLED").length;
 
             // Calculate total spending
-            const totalSpending = bookings.reduce((sum: number, b: any) => {
+            const totalSpending = bookings.reduce((sum: number, b: Booking) => {
               const price = parseFloat(b.raw_total_price || b.total_price || "0");
               return sum + (isNaN(price) ? 0 : price);
             }, 0);

@@ -20,6 +20,7 @@ interface VenueAPI {
     id: number;
     url: string;
   }[];
+  sportTypes?: string[];
 }
 
 interface TransformedVenue {
@@ -89,7 +90,7 @@ const VenuesPage = () => {
           const venuesWithTypes = await Promise.all(
             venuesData.map(async (venue) => {
               const sportTypes = await fetchVenueDetails(venue.id);
-              return { ...venue, sportTypes } as VenueAPI & { sportTypes: string[] };
+              return { ...venue, sportTypes };
             })
           );
 
@@ -102,7 +103,7 @@ const VenuesPage = () => {
               venue.photos && venue.photos.length > 0
                 ? venue.photos.map((photo) => normalizePhotoUrl(photo.url))
                 : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
-            sportTypes: (venue as any).sportTypes,
+            sportTypes: venue.sportTypes,
           }));
 
           setVenues(transformed);
