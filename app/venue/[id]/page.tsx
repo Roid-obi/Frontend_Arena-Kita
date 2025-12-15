@@ -9,6 +9,17 @@ import bookingsData from "@/data/dummy/bookings.json";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+// Dynamic import for VenueMap to avoid SSR issues with Leaflet
+const VenueMap = dynamic(() => import("@/components/VenueMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] md:h-[500px] rounded-xl bg-gray-100 animate-pulse flex items-center justify-center">
+      <p className="text-gray-500">Memuat peta...</p>
+    </div>
+  ),
+});
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -203,25 +214,28 @@ export default function VenueDetailPage({ params }: PageProps) {
           <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 lg:p-8 mb-8 md:mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-[#1a1a1a] mb-4 md:mb-6">Lokasi</h2>
             {hasValidCoordinates ? (
-              <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer" className="block group">
-                <div className="border-2 border-[#0d47a1] rounded-xl p-4 md:p-6 lg:p-8 hover:shadow-xl transition-all bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer">
-                  <div className="flex items-start gap-3 md:gap-4">
-                    <div className="bg-[#0d47a1] rounded-full p-3 md:p-4 flex-shrink-0 group-hover:bg-[#f97316] transition-colors">
-                      <MapPin className="text-white w-6 h-6 md:w-8 md:h-8" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg md:text-xl font-bold text-[#1a1a1a] mb-1 md:mb-2">Lihat Lokasi di Google Maps</h3>
-                      <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4 break-all">
-                        {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                      </p>
-                      <div className="flex items-center gap-2 text-[#0d47a1] font-semibold group-hover:text-[#f97316] transition-colors">
-                        <span className="text-sm md:text-base">Buka di Google Maps</span>
-                        <ExternalLink className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              <div className="space-y-4">
+                {/* Interactive Map */}
+                <VenueMap latitude={latitude} longitude={longitude} venueName={venue.venue_name} address={venue.address} />
+
+                {/* Google Maps Link */}
+                <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer" className="block group">
+                  <div className="border-2 border-[#0d47a1] rounded-xl p-4 md:p-6 hover:shadow-xl transition-all bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="bg-[#0d47a1] rounded-full p-3 flex-shrink-0 group-hover:bg-[#f97316] transition-colors">
+                        <MapPin className="text-white w-5 h-5 md:w-6 md:h-6" />
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base md:text-lg font-bold text-[#1a1a1a]">Buka di Google Maps</h3>
+                        <p className="text-xs md:text-sm text-gray-600">
+                          {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                        </p>
+                      </div>
+                      <ExternalLink className="w-5 h-5 text-[#0d47a1] group-hover:text-[#f97316] transition-colors flex-shrink-0" />
                     </div>
                   </div>
-                </div>
-              </a>
+                </a>
+              </div>
             ) : (
               <div className="border-2 border-gray-200 rounded-xl p-4 md:p-6 lg:p-8 bg-gray-50">
                 <p className="text-gray-600 text-center py-8">Koordinat lokasi tidak tersedia</p>
