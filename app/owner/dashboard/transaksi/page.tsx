@@ -166,7 +166,7 @@ export default function OwnerTransaksi() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metode Pembayaran</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu Pembayaran</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
@@ -180,9 +180,9 @@ export default function OwnerTransaksi() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentTransactions.map((t) => (
+                  {currentTransactions.map((t, index) => (
                     <tr key={t.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{t.id}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{startIndex + index + 1}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{t.payment_method}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{t.payment_time}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">

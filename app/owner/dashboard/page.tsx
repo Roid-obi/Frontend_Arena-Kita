@@ -181,7 +181,7 @@ export default function OwnerDashboardHome() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lapangan</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
@@ -192,9 +192,9 @@ export default function OwnerDashboardHome() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {bookings.map((b) => (
+                  {bookings.map((b, index) => (
                     <tr key={b.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.id}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-700\">{index + 1}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">
                         <div>
                           <p className="font-medium">{b.user.name}</p>

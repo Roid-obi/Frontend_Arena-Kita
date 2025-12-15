@@ -248,7 +248,7 @@ export default function OwnerPesanan() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lapangan</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe Olahraga</th>
@@ -260,9 +260,9 @@ export default function OwnerPesanan() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentBookings.map((b) => (
+                  {currentBookings.map((b, index) => (
                     <tr key={b.id}>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{b.id}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-700">{startIndex + index + 1}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">
                         <div>
                           <p className="font-medium">{b.user.name}</p>

@@ -40,7 +40,7 @@ export default function AdminUser() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase\">No</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
@@ -48,9 +48,9 @@ export default function AdminUser() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentUsers.map((u) => (
+              {currentUsers.map((u, index) => (
                 <tr key={u.id}>
-                  <td className="px-4 py-3 text-sm text-gray-700">{u.id}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700\">{startIndex + index + 1}</td>
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">{u.full_name}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{u.email}</td>
                   <td className="px-4 py-3 text-sm">
