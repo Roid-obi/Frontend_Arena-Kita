@@ -45,6 +45,8 @@ const VenuesPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sportType, setSportType] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [cities, setCities] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const limit = 9;
   const [hasNext, setHasNext] = useState(false);
@@ -58,6 +60,7 @@ const VenuesPage = () => {
         params.append("page", String(page));
         if (search.trim()) params.append("search", search.trim());
         if (sportType) params.append("sport_type", sportType);
+        if (city) params.append("city", city);
 
         const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues?${params.toString()}`);
         const result = await response.json();
@@ -118,11 +121,30 @@ const VenuesPage = () => {
     };
 
     fetchVenues();
-  }, [search, sportType, page]);
+  }, [search, sportType, city, page]);
+
+  // Fetch all cities for filter dropdown
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues?limit=999`);
+        const result = await response.json();
+        if (result.status === "success" && result.data) {
+          const venuesData: VenueAPI[] = result.data;
+          const uniqueCities = Array.from(new Set(venuesData.map((v) => v.city).filter(Boolean))) as string[];
+          setCities(uniqueCities.sort());
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      }
+    };
+
+    fetchCities();
+  }, []);
 
   useEffect(() => {
     setPage(1);
-  }, [search, sportType]);
+  }, [search, sportType, city]);
 
   const filteredVenues = useMemo(() => venues, [venues]);
 
@@ -136,7 +158,7 @@ const VenuesPage = () => {
             <p className="text-sm text-gray-500">Temukan venue terbaik untuk olahraga kamu</p>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Semua Venue</h1>
           </div>
-          <div className="w-full md:w-[520px] flex flex-col md:flex-row gap-3">
+          <div className="w-full md:w-auto flex flex-col md:flex-row gap-3">
             <select
               value={sportType}
               onChange={(e) => setSportType(e.target.value)}
@@ -145,6 +167,18 @@ const VenuesPage = () => {
               {sportTypeOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full md:w-48 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0d47a1] bg-white text-gray-800"
+            >
+              <option value="">Semua Kota</option>
+              {cities.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>

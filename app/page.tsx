@@ -64,6 +64,7 @@ const ArenaKita = () => {
   const [recPage, setRecPage] = useState(1);
   const recPerPage = 9;
   const [loading, setLoading] = useState(true);
+  const [hoveredCarousel, setHoveredCarousel] = useState<string | null>(null);
 
   // Fetch home data from API
   useEffect(() => {
@@ -273,7 +274,7 @@ const ArenaKita = () => {
         {/* Kategori */}
         <section className="mb-1 md:mb-5">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Kategori</h2>
-          <div className="relative -mx-4 md:-mx-8 lg:mx-0">
+          <div className="relative -mx-4 md:-mx-8 lg:mx-0" onMouseEnter={() => setHoveredCarousel("category")} onMouseLeave={() => setHoveredCarousel(null)}>
             <div className="px-0 md:px-8 lg:px-0">
               <div
                 id="category-container"
@@ -306,14 +307,18 @@ const ArenaKita = () => {
 
             <button
               onClick={() => scrollCategory("prev")}
-              className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+              className={`hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10 transition-opacity duration-300 ${
+                hoveredCarousel === "category" ? "opacity-100" : "opacity-0"
+              }`}
             >
               <ChevronLeft size={24} />
             </button>
 
             <button
               onClick={() => scrollCategory("next")}
-              className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+              className={`hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10 transition-opacity duration-300 ${
+                hoveredCarousel === "category" ? "opacity-100" : "opacity-0"
+              }`}
             >
               <ChevronRight size={24} />
             </button>
@@ -328,7 +333,7 @@ const ArenaKita = () => {
               <p className="text-gray-600">Memuat venue...</p>
             </div>
           ) : (
-            <div className="relative -mx-4 md:-mx-8 lg:mx-0">
+            <div className="relative -mx-4 md:-mx-8 lg:mx-0" onMouseEnter={() => setHoveredCarousel("venue")} onMouseLeave={() => setHoveredCarousel(null)}>
               <div className="lg:px-0">
                 <div
                   id="venue-container"
@@ -350,14 +355,18 @@ const ArenaKita = () => {
 
               <button
                 onClick={() => scrollVenue("prev")}
-                className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+                className={`hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10 transition-opacity duration-300 ${
+                  hoveredCarousel === "venue" ? "opacity-100" : "opacity-0"
+                }`}
               >
                 <ChevronLeft size={24} />
               </button>
 
               <button
                 onClick={() => scrollVenue("next")}
-                className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10"
+                className={`hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10 transition-opacity duration-300 ${
+                  hoveredCarousel === "venue" ? "opacity-100" : "opacity-0"
+                }`}
               >
                 <ChevronRight size={24} />
               </button>

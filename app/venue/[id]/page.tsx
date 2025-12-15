@@ -15,33 +15,33 @@ interface PageProps {
 }
 
 interface VenuaData {
+  id: number;
+  venue_name: string;
+  description: string;
+  address: string;
+  city: string;
+  gps_coordinate: string;
+  opening_time: string;
+  closing_time: string;
+  thumbnail: string;
+  photos: Array<{
     id: number;
-    venue_name: string;
-    description: string;
-    address: string;
-    city: string;
-    gps_coordinate: string;
-    opening_time: string;
-    closing_time: string;
-    thumbnail: string;
-    photos: Array<{
-        id: number;
-        url: string;
+    url: string;
+  }>;
+  fields: Array<{
+    id: number;
+    name: string;
+    type: string;
+    status: string;
+    photo_url: string;
+    pricing_schemes: Array<{
+      id: number;
+      duration_minutes: number;
+      price: string;
+      raw_price: number;
+      description: string;
     }>;
-    fields: Array<{
-        id: number;
-        name: string;
-        type: string;
-        status: string;
-        photo_url: string;
-        pricing_schemes: Array<{
-            id: number;
-            duration_minutes: number;
-            price: string;
-            raw_price: number;
-            description: string;
-        }>;
-    }>;
+  }>;
 }
 
 export default function VenueDetailPage({ params }: PageProps) {
@@ -50,35 +50,34 @@ export default function VenueDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-      const fetchVenueData = async () => {
-          try {
-              setLoading(true);
-              const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${id}`);
-              const result = await response.json();
+    const fetchVenueData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${id}`);
+        const result = await response.json();
 
-              if (result.status === "success" && result.data) {
-                  setVenue(result.data);
-              }
-          } catch (error) {
-              console.log("Error fetching detail venue: ", error)
-          } finally {
-              setLoading(false);
-          }
+        if (result.status === "success" && result.data) {
+          setVenue(result.data);
+        }
+      } catch (error) {
+        console.log("Error fetching detail venue: ", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      fetchVenueData();
-
+    fetchVenueData();
   }, [id]);
 
   if (loading) {
-      return (
-          <>
-              <Navbar />
-              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                  <p className="text-gray-600">Loading...</p>
-              </div>
-          </>
-      );
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </>
+    );
   }
 
   if (!venue) {
@@ -99,11 +98,23 @@ export default function VenueDetailPage({ params }: PageProps) {
   const fields = venue.fields || [];
 
   // Parse GPS coordinate
-    let latitude = 0;
-    let longitude = 0;
+  let latitude = 0;
+  let longitude = 0;
+  let hasValidCoordinates = false;
 
-  if (venue.gps_coordinate !== null) {
-      [latitude, longitude] = venue.gps_coordinate.split(",").map((c) => parseFloat(c.trim()));
+  if (venue.gps_coordinate && venue.gps_coordinate.trim()) {
+    try {
+      const coords = venue.gps_coordinate.split(",").map((c) => {
+        const parsed = parseFloat(c.trim());
+        return isNaN(parsed) ? 0 : parsed;
+      });
+      latitude = coords[0] || 0;
+      longitude = coords[1] || 0;
+      hasValidCoordinates = latitude !== 0 || longitude !== 0;
+    } catch (error) {
+      console.log("Error parsing coordinates:", error);
+      hasValidCoordinates = false;
+    }
   }
 
   // Format time
@@ -176,9 +187,13 @@ export default function VenueDetailPage({ params }: PageProps) {
                 {/* GPS Coordinates */}
                 <div className="bg-blue-50 border border-[#0d47a1]/20 rounded-lg p-3 md:p-4">
                   <p className="text-xs md:text-sm font-semibold text-[#1a1a1a] mb-1">Koordinat GPS</p>
-                  <p className="text-xs md:text-sm text-gray-600 break-all">
-                    {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                  </p>
+                  {hasValidCoordinates ? (
+                    <p className="text-xs md:text-sm text-gray-600 break-all">
+                      {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                    </p>
+                  ) : (
+                    <p className="text-xs md:text-sm text-gray-500 italic">Tidak tersedia</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -187,25 +202,31 @@ export default function VenueDetailPage({ params }: PageProps) {
           {/* Location Map */}
           <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 lg:p-8 mb-8 md:mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-[#1a1a1a] mb-4 md:mb-6">Lokasi</h2>
-            <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer" className="block group">
-              <div className="border-2 border-[#0d47a1] rounded-xl p-4 md:p-6 lg:p-8 hover:shadow-xl transition-all bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer">
-                <div className="flex items-start gap-3 md:gap-4">
-                  <div className="bg-[#0d47a1] rounded-full p-3 md:p-4 flex-shrink-0 group-hover:bg-[#f97316] transition-colors">
-                    <MapPin className="text-white w-6 h-6 md:w-8 md:h-8" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg md:text-xl font-bold text-[#1a1a1a] mb-1 md:mb-2">Lihat Lokasi di Google Maps</h3>
-                    <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4 break-all">
-                      {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                    </p>
-                    <div className="flex items-center gap-2 text-[#0d47a1] font-semibold group-hover:text-[#f97316] transition-colors">
-                      <span className="text-sm md:text-base">Buka di Google Maps</span>
-                      <ExternalLink className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            {hasValidCoordinates ? (
+              <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer" className="block group">
+                <div className="border-2 border-[#0d47a1] rounded-xl p-4 md:p-6 lg:p-8 hover:shadow-xl transition-all bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="bg-[#0d47a1] rounded-full p-3 md:p-4 flex-shrink-0 group-hover:bg-[#f97316] transition-colors">
+                      <MapPin className="text-white w-6 h-6 md:w-8 md:h-8" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg md:text-xl font-bold text-[#1a1a1a] mb-1 md:mb-2">Lihat Lokasi di Google Maps</h3>
+                      <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4 break-all">
+                        {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                      </p>
+                      <div className="flex items-center gap-2 text-[#0d47a1] font-semibold group-hover:text-[#f97316] transition-colors">
+                        <span className="text-sm md:text-base">Buka di Google Maps</span>
+                        <ExternalLink className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
                     </div>
                   </div>
                 </div>
+              </a>
+            ) : (
+              <div className="border-2 border-gray-200 rounded-xl p-4 md:p-6 lg:p-8 bg-gray-50">
+                <p className="text-gray-600 text-center py-8">Koordinat lokasi tidak tersedia</p>
               </div>
-            </a>
+            )}
           </div>
 
           {/* Field List */}
