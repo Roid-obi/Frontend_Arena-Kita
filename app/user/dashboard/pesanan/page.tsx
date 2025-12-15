@@ -54,6 +54,14 @@ export default function DashboardPesanan() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"PENDING" | "CONFIRMED" | "REJECTED" | "COMPLETED">("PENDING");
+  const [statusCounts, setStatusCounts] = useState<{ PENDING: number; CONFIRMED: number; REJECTED: number; COMPLETED: number }>(
+    {
+      PENDING: 0,
+      CONFIRMED: 0,
+      REJECTED: 0,
+      COMPLETED: 0,
+    }
+  );
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<UserBooking | null>(null);
@@ -67,6 +75,37 @@ export default function DashboardPesanan() {
     { id: "OVO", name: "OVO", logo: "💰" },
     { id: "Dana", name: "Dana", logo: "💵" },
   ];
+
+  const fetchStatusCounts = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) return;
+
+      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) return;
+
+      const result: ApiResponse = await response.json();
+
+      if (result.status === "success" && result.data) {
+        const counts = {
+          PENDING: result.data.filter((b) => b.booking_status.toUpperCase() === "PENDING").length,
+          CONFIRMED: result.data.filter((b) => b.booking_status.toUpperCase() === "CONFIRMED").length,
+          REJECTED: result.data.filter((b) => b.booking_status.toUpperCase() === "REJECTED").length,
+          COMPLETED: result.data.filter((b) => b.booking_status.toUpperCase() === "COMPLETED").length,
+        };
+        setStatusCounts(counts);
+      }
+    } catch (err) {
+      console.error("Error fetching status counts:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -106,6 +145,10 @@ export default function DashboardPesanan() {
 
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    fetchStatusCounts();
+  }, [bookings]);
 
   const handlePayment = (booking: UserBooking) => {
     setSelectedBooking(booking);
@@ -269,7 +312,7 @@ export default function DashboardPesanan() {
               activeTab === tab.key ? "border-[#0d47a1] text-[#0d47a1]" : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
             }`}
           >
-            {tab.label}
+            {tab.label} <span className="ml-2 inline-block bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-xs font-semibold">{statusCounts[tab.key as keyof typeof statusCounts]}</span>
           </button>
         ))}
       </div>

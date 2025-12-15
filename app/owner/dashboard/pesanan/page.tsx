@@ -43,43 +43,85 @@ export default function OwnerPesanan() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<StatusTab>("PENDING");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [statusCounts, setStatusCounts] = useState<{ [key in StatusTab]: number }>({
+    PENDING: 0,
+    CONFIRMED: 0,
+    REJECTED: 0,
+    COMPLETED: 0,
+    FAILED: 0,
+  });
   const itemsPerPage = 5;
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const token = Cookies.get("token");
-        if (!token) {
-          setError("Token tidak ditemukan");
-          setLoading(false);
-          return;
-        }
+  const fetchStatusCounts = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) return;
 
-        const response = await fetch(BOOKINGS_URL, {
+      const statuses: StatusTab[] = ["PENDING", "CONFIRMED", "REJECTED", "COMPLETED", "FAILED"];
+      const counts: { [key in StatusTab]: number } = {
+        PENDING: 0,
+        CONFIRMED: 0,
+        REJECTED: 0,
+        COMPLETED: 0,
+        FAILED: 0,
+      };
+
+      for (const status of statuses) {
+        const response = await fetch(`${BOOKINGS_URL}?status=${status}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         const result = await response.json();
-
-        if (response.ok && result.status === "success" && result.data) {
-          setBookings(result.data);
-        } else {
-          setError(result.message || "Gagal mengambil data pesanan");
+        if (response.ok && result.status === "success" && Array.isArray(result.data)) {
+          counts[status] = result.data.length;
         }
-      } catch (err) {
-        console.error("Error fetching bookings:", err);
-        setError("Terjadi kesalahan saat mengambil data pesanan");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchBookings();
-  }, []);
+      setStatusCounts(counts);
+    } catch (err) {
+      console.error("Error fetching status counts:", err);
+    }
+  };
 
-  // Filter bookings berdasarkan search query dan tab status
+  const refetchBookings = async (status: StatusTab = activeTab) => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        setError("Token tidak ditemukan");
+        return;
+      }
+
+      const url = `${BOOKINGS_URL}?status=${status}`;
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === "success" && result.data) {
+        setBookings(result.data);
+        setError("");
+      } else {
+        setError(result.message || "Gagal mengambil data pesanan");
+      }
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      setError("Terjadi kesalahan saat mengambil data pesanan");
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    refetchBookings(activeTab).finally(() => setLoading(false));
+    fetchStatusCounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // Filter bookings berdasarkan search query saja (status sudah difilter oleh API)
   const filteredBookings = bookings.filter((b) => {
     // Filter by search query
     const matchesSearch =
@@ -88,15 +130,7 @@ export default function OwnerPesanan() {
       b.field_info.field_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.booking_date.includes(searchQuery);
 
-    // Filter by status tab
-    const matchesTab =
-      (activeTab === "PENDING" && b.status === "PENDING") ||
-      (activeTab === "CONFIRMED" && b.status === "CONFIRMED") ||
-      (activeTab === "REJECTED" && (b.status === "REJECTED" || b.status === "CANCELLED")) ||
-      (activeTab === "COMPLETED" && b.status === "COMPLETED") ||
-      (activeTab === "FAILED" && b.status === "FAILED");
-
-    return matchesSearch && matchesTab;
+    return matchesSearch;
   });
 
   // Pagination logic
@@ -152,9 +186,9 @@ export default function OwnerPesanan() {
       const result = await response.json();
 
       if (response.ok && result.status === "success" && result.data) {
-        // Reflect server response (e.g., status CONFIRMED)
-        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, ...result.data } : b)));
         alert(result.message || "Booking berhasil disetujui");
+        // Refetch bookings to update the list immediately
+        await refetchBookings(activeTab);
       } else {
         throw new Error(result.message || "Gagal menyetujui booking");
       }
@@ -188,10 +222,9 @@ export default function OwnerPesanan() {
       const result = await response.json();
 
       if (response.ok && result.status === "success" && result.data) {
-        // If API returns updated booking data, merge it; else set to REJECTED
-        const nextStatus = result.data?.status || "REJECTED";
-        setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status: nextStatus } : b)));
         alert(result.message || "Booking berhasil ditolak");
+        // Refetch bookings to update the list immediately
+        await refetchBookings(activeTab);
       } else {
         throw new Error(result.message || "Gagal menolak booking");
       }
@@ -232,7 +265,7 @@ export default function OwnerPesanan() {
               activeTab === tab.key ? "border-[#0d47a1] text-[#0d47a1]" : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
             }`}
           >
-            {tab.label}
+            {tab.label} <span className="ml-2 inline-block bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-xs font-semibold">{statusCounts[tab.key as StatusTab]}</span>
           </button>
         ))}
       </div>
@@ -281,24 +314,7 @@ export default function OwnerPesanan() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex gap-1 flex-wrap">
-                          {b.status === "PENDING" && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(b.id)}
-                                disabled={actionLoading === b.id}
-                                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {actionLoading === b.id ? "..." : "Approve"}
-                              </button>
-                              <button
-                                onClick={() => handleReject(b.id)}
-                                disabled={actionLoading === b.id}
-                                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {actionLoading === b.id ? "..." : "Reject"}
-                              </button>
-                            </>
-                          )}
+                          {b.status === "PENDING" && <span className="text-xs text-gray-500">-</span>}
                           {b.status === "CONFIRMED" && (
                             <button
                               onClick={() => handleReject(b.id)}

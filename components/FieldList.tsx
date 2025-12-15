@@ -19,26 +19,26 @@ interface Booking {
 }
 
 interface Field {
+  id: number;
+  name: string;
+  type: string;
+  status: string;
+  photo_url: string;
+  pricing_schemes: {
     id: number;
-    name: string;
-    type: string;
-    status: string;
-    photo_url: string;
-    pricing_schemes: {
-        id: number;
-        duration_minutes: number;
-        price: string;
-        raw_price: number;
-        description: string;
-    }[];
+    duration_minutes: number;
+    price: string;
+    raw_price: number;
+    description: string;
+  }[];
 }
 
 interface PricingScheme {
-        id: number;
-        duration_minutes: number;
-        price: string;
-        raw_price: number;
-        description: string;
+  id: number;
+  duration_minutes: number;
+  price: string;
+  raw_price: number;
+  description: string;
 }
 
 interface FieldListProps {
@@ -55,35 +55,34 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
   const [isBooking, setIsBooking] = useState(false);
 
   const getFieldPhotoUrl = (url: string) => {
-      console.log(typeof url, url);
-      if (!url || url.includes("placehold.co")) {
-          return "https://placehold.co/2000x1200?text=Hello+World";
-      }
-      return `https://dev.api.arenakita.my.id/storage/${url}`;
+    console.log(typeof url, url);
+    if (!url || url.includes("placehold.co")) {
+      return "https://placehold.co/2000x1200?text=Hello+World";
+    }
+    return `https://dev.api.arenakita.my.id/storage/${url}`;
   };
 
   const handePricingSchemeClick = (fieldId: number, schemeId: number) => {
-      setSelectedPricingScheme((prev) => ({
-          ...prev,
-          [fieldId]: prev[fieldId] === schemeId ? null : schemeId,
-      }));
-  }
+    setSelectedPricingScheme((prev) => ({
+      ...prev,
+      [fieldId]: prev[fieldId] === schemeId ? null : schemeId,
+    }));
+  };
 
   const handleTimeSlotClick = (fieldId: number, time: string) => {
-      setSelectedTimeSlot((prev) => ({
-          ...prev,
-          [fieldId]: prev[fieldId] === time ? null : time,
-      }));
-  }
+    setSelectedTimeSlot((prev) => ({
+      ...prev,
+      [fieldId]: prev[fieldId] === time ? null : time,
+    }));
+  };
 
-    const calculateEndTime = (startTime: string, durationMinutes: number): string => {
-        const [hours, minutes] = startTime.split(':').map(Number);
-        const totalMinutes = hours * 60 + minutes + durationMinutes;
-        const endHours = Math.floor(totalMinutes / 60);
-        const endMinutes = totalMinutes % 60;
-        return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
-    };
-
+  const calculateEndTime = (startTime: string, durationMinutes: number): string => {
+    const [hours, minutes] = startTime.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes + durationMinutes;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
+  };
 
   const getAvailableTimeSlots = (fieldId: number): string[] => {
     const fieldBookings = bookings.filter((booking) => booking.pricing_scheme_id === fieldId && booking.booking_status === "CONFIRMED");
@@ -99,7 +98,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     return allSlots.filter((slot) => !bookedTimes.includes(slot));
   };
 
-/*  const getFieldPricing = (fieldId: number) => {
+  /*  const getFieldPricing = (fieldId: number) => {
     return pricingSchemes.filter((scheme) => scheme.field_id === fieldId);
   };*/
 
@@ -121,74 +120,72 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     return null;
   };
 
-    const handleBookNow = async (field: Field) => {
-        const selectedSchemeId = selectedPricingScheme[field.id];
-        const selectedTime = selectedTimeSlot[field.id];
-      const bookingDateInput = selectedDate[field.id];
+  const handleBookNow = async (field: Field) => {
+    const selectedSchemeId = selectedPricingScheme[field.id];
+    const selectedTime = selectedTimeSlot[field.id];
+    const bookingDateInput = selectedDate[field.id];
 
-      if (!selectedSchemeId || !selectedTime) {
-        alert("Silakan pilih tanggal, paket harga, dan jam booking terlebih dahulu!");
-            return;
-        }
+    if (!selectedSchemeId || !selectedTime) {
+      alert("Silakan pilih tanggal, paket harga, dan jam booking terlebih dahulu!");
+      return;
+    }
 
-        const selectedScheme = field.pricing_schemes.find(s => s.id === selectedSchemeId);
-        if (!selectedScheme) return;
+    const selectedScheme = field.pricing_schemes.find((s) => s.id === selectedSchemeId);
+    if (!selectedScheme) return;
 
-        setIsBooking(true);
+    setIsBooking(true);
 
-        try {
-            const token = Cookies.get("token");
-            if (!token) {
-                return;
-            }
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        return;
+      }
 
-            const endTime = calculateEndTime(selectedTime, selectedScheme.duration_minutes);
-            const bookingDate = bookingDateInput || new Date().toISOString().split('T')[0];
+      const endTime = calculateEndTime(selectedTime, selectedScheme.duration_minutes);
+      const bookingDate = bookingDateInput || new Date().toISOString().split("T")[0];
 
-            const bookingData = {
-                pricing_scheme_id: selectedSchemeId,
-                booking_date: bookingDate,
-                start_time: selectedTime,
-                end_time: endTime,
-                total_price: selectedScheme.raw_price.toFixed(2),
-                booking_status: "PENDING"
-            };
+      const bookingData = {
+        pricing_scheme_id: selectedSchemeId,
+        booking_date: bookingDate,
+        start_time: selectedTime,
+        end_time: endTime,
+        total_price: selectedScheme.raw_price.toFixed(2),
+        booking_status: "PENDING",
+      };
 
-            const response = await fetch('https://dev.api.arenakita.my.id/api/v1/bookings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(bookingData),
-            });
+      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(bookingData),
+      });
 
-            const result = await response.json();
+      const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.message || 'Gagal membuat booking');
-            }
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal membuat booking");
+      }
 
-            alert(`Booking berhasil dibuat!\nLapangan: ${field.name}\nJam: ${selectedTime} - ${endTime}`);
+      alert(`Booking berhasil dibuat!\nLapangan: ${field.name}\nJam: ${selectedTime} - ${endTime}`);
 
-            setSelectedPricingScheme(prev => ({ ...prev, [field.id]: null }));
-            setSelectedTimeSlot(prev => ({ ...prev, [field.id]: null }));
-            setSelectedDate(prev => ({ ...prev, [field.id]: null }));
+      setSelectedPricingScheme((prev) => ({ ...prev, [field.id]: null }));
+      setSelectedTimeSlot((prev) => ({ ...prev, [field.id]: null }));
+      setSelectedDate((prev) => ({ ...prev, [field.id]: null }));
 
-            window.location.reload();
+      window.location.reload();
+    } catch (error) {
+      console.error("Booking error:", error);
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat membuat booking");
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
-        } catch (error) {
-            console.error('Booking error:', error);
-            alert(error instanceof Error ? error.message : 'Terjadi kesalahan saat membuat booking');
-        } finally {
-            setIsBooking(false);
-        }
-    };
-
-
-            return (
+  return (
     <div className="space-y-4 md:space-y-6">
       <h3 className="text-2xl md:text-3xl font-bold text-[#1a1a1a]">Daftar Lapangan</h3>
 
@@ -247,69 +244,69 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                           <input
                             type="date"
                             value={selectedDate[field.id] || ""}
-                            min={new Date().toISOString().split('T')[0]}
+                            min={new Date().toISOString().split("T")[0]}
                             onChange={(e) => setSelectedDate((prev) => ({ ...prev, [field.id]: e.target.value }))}
                             className="px-3 py-2 border rounded-lg text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0d47a1] focus:border-[#0d47a1]"
                           />
                         </div>
                         {/* Pricing Breakdown */}
                         {pricing.length > 0 && (
-                            <div className="mb-4">
-                                <p className="font-semibold text-[#1a1a1a] mb-3 text-sm md:text-base">Pilih Paket Harga:</p>
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {pricing.map((scheme) => (
-                                        <button
-                                            key={scheme.id}
-                                            onClick={() => handePricingSchemeClick(field.id, scheme.id)}
-                                            className={`px-4 py-2 border rounded-lg text-sm md:text-base font-semibold shadow-sm transition-colors ${
-                                                selectedPricingScheme[field.id] === scheme.id
-                                                    ? "bg-[#f97316] border-[#f97316] text-white"
-                                                    : "bg-white border-[#0d47a1]/30 text-[#0d47a1] hover:bg-[#0d47a1] hover:text-white"
-                                            }`}
-                                        >
-                                            {scheme.description} - {formatPrice(scheme.raw_price)}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/*Show time slots*/}
-                                {selectedPricingScheme[field.id] && (
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Clock size={18} className="text-[#0d47a1] md:w-5 md:h-5" />
-                                            <h5 className="font-semibold text-[#1a1a1a] text-sm md:text-base">Pilih Jam Booking:</h5>
-                                        </div>
-                                        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-4">
-                                            {getAvailableTimeSlots(field.id).length > 0 ? (
-                                                getAvailableTimeSlots(field.id).map((time) => (
-                                                    <button
-                                                        key={time}
-                                                        onClick={() => handleTimeSlotClick(field.id, time)}
-                                                        className={`px-3 py-2 border font-semibold rounded-lg transition-colors text-xs md:text-sm shadow-sm ${
-                                                            selectedTimeSlot[field.id] === time
-                                                                ? "bg-[#f97316] border-[#f97316] text-white"
-                                                                : "bg-white border-[#0d47a1]/30 text-[#0d47a1] hover:bg-[#0d47a1] hover:text-white"
-                                                        }`}
-                                                    >
-                                                        {time}
-                                                    </button>
-                                                ))
-                                            ) : (
-                                                <p className="text-sm text-gray-500 col-span-full">Tidak ada waktu yang tersedia untuk hari ini</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+                          <div className="mb-4">
+                            <p className="font-semibold text-[#1a1a1a] mb-3 text-sm md:text-base">Pilih Paket Harga:</p>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {pricing.map((scheme) => (
+                                <button
+                                  key={scheme.id}
+                                  onClick={() => handePricingSchemeClick(field.id, scheme.id)}
+                                  className={`px-4 py-2 border rounded-lg text-sm md:text-base font-semibold shadow-sm transition-colors ${
+                                    selectedPricingScheme[field.id] === scheme.id
+                                      ? "bg-[#f97316] border-[#f97316] text-white"
+                                      : "bg-white border-[#0d47a1]/30 text-[#0d47a1] hover:bg-[#0d47a1] hover:text-white"
+                                  }`}
+                                >
+                                  {scheme.description} - {formatPrice(scheme.raw_price)}
+                                </button>
+                              ))}
                             </div>
+
+                            {/*Show time slots*/}
+                            {selectedPricingScheme[field.id] && (
+                              <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Clock size={18} className="text-[#0d47a1] md:w-5 md:h-5" />
+                                  <h5 className="font-semibold text-[#1a1a1a] text-sm md:text-base">Pilih Jam Booking:</h5>
+                                </div>
+                                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-4">
+                                  {getAvailableTimeSlots(field.id).length > 0 ? (
+                                    getAvailableTimeSlots(field.id).map((time) => (
+                                      <button
+                                        key={time}
+                                        onClick={() => handleTimeSlotClick(field.id, time)}
+                                        className={`px-3 py-2 border font-semibold rounded-lg transition-colors text-xs md:text-sm shadow-sm ${
+                                          selectedTimeSlot[field.id] === time
+                                            ? "bg-[#f97316] border-[#f97316] text-white"
+                                            : "bg-white border-[#0d47a1]/30 text-[#0d47a1] hover:bg-[#0d47a1] hover:text-white"
+                                        }`}
+                                      >
+                                        {time}
+                                      </button>
+                                    ))
+                                  ) : (
+                                    <p className="text-sm text-gray-500 col-span-full">Tidak ada waktu yang tersedia untuk hari ini</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
 
-                          <button
-                              onClick={() => handleBookNow(field)}
-                              disabled={!selectedPricingScheme[field.id] || !selectedTimeSlot[field.id] || isBooking}
-                              className="w-full px-4 py-2 md:py-3 bg-[#0d47a1] text-white font-semibold rounded-lg hover:bg-[#f97316] transition-colors text-sm md:text-base shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                              {isBooking ? 'Memproses...' : 'Pesan Sekarang'}
-                          </button>
+                        <button
+                          onClick={() => handleBookNow(field)}
+                          disabled={!selectedPricingScheme[field.id] || !selectedTimeSlot[field.id] || isBooking}
+                          className="w-full px-4 py-2 md:py-3 bg-[#0d47a1] text-white font-semibold rounded-lg hover:bg-[#f97316] transition-colors text-sm md:text-base shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isBooking ? "Memproses..." : "Pesan Sekarang"}
+                        </button>
                       </div>
                     ) : (
                       <div className="bg-yellow-50 border border-yellow-200 p-3 md:p-4 rounded-lg">
