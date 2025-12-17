@@ -32,7 +32,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
   return (
     <Link href={`/venue/${venue.id}`}>
       <div
-        className="rounded-lg overflow-hidden shadow-lg cursor-pointer transition bg-white hover:shadow-xl hover:scale-105"
+        className="rounded-xl overflow-hidden shadow-lg cursor-pointer transition bg-white hover:shadow-xl hover:scale-[1.02]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -46,6 +46,9 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${idx === currentImageIndex ? "opacity-100" : "opacity-0"}`}
             />
           ))}
+
+          {/* Gradient overlay for better visual consistency with categories */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/40 via-black/10 to-transparent pointer-events-none" />
 
           {/* Sport Type Badges */}
           {venue.sportTypes && venue.sportTypes.length > 0 && (

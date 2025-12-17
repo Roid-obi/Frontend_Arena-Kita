@@ -279,7 +279,7 @@ const ArenaKita = () => {
             <div className="px-0 md:px-8 lg:px-0">
               <div
                 id="category-container"
-                className="flex space-x-4 overflow-x-auto px-4 md:px-0 pb-6"
+                className="flex md:grid gap-4 overflow-x-auto md:overflow-visible px-4 md:px-0 pb-6 md:[grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))]"
                 style={{
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
@@ -291,37 +291,27 @@ const ArenaKita = () => {
                   <Link
                     key={category.id}
                     href={`/venues?sport_type=${category.name.toLowerCase()}`}
-                    className="flex-none w-40 md:w-48 h-24 md:h-32 rounded-lg overflow-hidden shadow-lg cursor-pointer transition relative flex items-center justify-center hover:scale-105"
+                    className="flex-none md:flex-initial w-40 h-24 md:w-auto md:h-auto md:aspect-[5/3] rounded-xl overflow-hidden shadow-lg hover:shadow-xl cursor-pointer transition-transform duration-200 relative flex items-center justify-center hover:scale-[1.02]"
                     style={{
                       backgroundImage: `url(${category.image})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}
                   >
-                    {/* <div className="absolute inset-0 bg-[#00000079]"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="font-bold text-base md:text-lg text-white text-center px-2">{category.name}</h3>
-                    </div> */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-3">
+                      <h3 className="font-semibold text-sm md:text-base text-white drop-shadow text-center truncate">{category.name}</h3>
+                    </div>
                   </Link>
                 ))}
               </div>
             </div>
 
-            <button
-              onClick={() => scrollCategory("prev")}
-              className={`hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10 transition-opacity duration-300 ${
-                hoveredCarousel === "category" ? "opacity-100" : "opacity-0"
-              }`}
-            >
+            <button onClick={() => scrollCategory("prev")} className="hidden">
               <ChevronLeft size={24} />
             </button>
 
-            <button
-              onClick={() => scrollCategory("next")}
-              className={`hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100 z-10 transition-opacity duration-300 ${
-                hoveredCarousel === "category" ? "opacity-100" : "opacity-0"
-              }`}
-            >
+            <button onClick={() => scrollCategory("next")} className="hidden">
               <ChevronRight size={24} />
             </button>
           </div>
