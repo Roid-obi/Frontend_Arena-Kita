@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { User, LoginData, RegisterData, AuthContextType, LoginResponse, RegisterResponse } from "@/types/auth";
+import { User, LoginData, RegisterData, AuthContextType, LoginResponse, RegisterResponse, VerifyOtpData, VerifyOtpResponse } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -75,13 +75,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
+        throw new Error(errorData.message || "Registrasi gagal");
       }
 
       const responseData: RegisterResponse = await response.json();
 
       if (responseData.status === "success") {
-        // Auto login setelah register berhasil
+        // Registration successful, now user needs to verify OTP
+        // Don't auto login, just return
+        return;
+      } else {
+        throw new Error(responseData.message || "Registrasi gagal");
+      }
+    } catch (error) {
+      console.error("Registrasi error:", error);
+      throw error;
+    }
+  };
+
+  const verifyOtp = async (data: VerifyOtpData) => {
+    try {
+      const response = await fetch(`${API_BASE}/v1/auth/user/verify-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Verifikasi OTP gagal");
+      }
+
+      const responseData: VerifyOtpResponse = await response.json();
+
+      if (responseData.status === "success") {
+        // Auto login after OTP verification
         setUser(responseData.data.user);
         setToken(responseData.data.token);
 
@@ -90,10 +120,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         Cookies.set("userRole", responseData.data.user.role, { expires: 7 });
         return responseData.data.user.role;
       } else {
-        throw new Error(responseData.message || "Registration failed");
+        throw new Error(responseData.message || "Verifikasi OTP gagal");
       }
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Verifikasi OTP error:", error);
       throw error;
     }
   };
@@ -131,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         login,
         register,
+        verifyOtp,
         logout,
         isLoading,
       }}

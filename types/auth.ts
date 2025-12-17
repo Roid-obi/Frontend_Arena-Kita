@@ -29,7 +29,20 @@ export interface RegisterResponse {
   message: string;
   data: {
     user: User;
+  };
+}
+
+export interface VerifyOtpData {
+  email: string;
+  otp_code: string;
+}
+
+export interface VerifyOtpResponse {
+  status: string;
+  message: string;
+  data: {
     token: string;
+    user: User;
   };
 }
 
@@ -50,7 +63,8 @@ export interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string, type: 'user' | 'owner') => Promise<'user' | 'owner' | 'admin' | void>;
-  register: (data: RegisterData) => Promise<'user' | 'owner' | 'admin' | void>;
+  register: (data: RegisterData) => Promise<void>;
+  verifyOtp: (data: VerifyOtpData) => Promise<'user' | 'owner' | 'admin' | void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
