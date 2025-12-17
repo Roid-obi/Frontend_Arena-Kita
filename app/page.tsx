@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
@@ -287,9 +288,10 @@ const ArenaKita = () => {
                 }}
               >
                 {categories.map((category) => (
-                  <div
+                  <Link
                     key={category.id}
-                    className="flex-none w-40 md:w-48 h-24 md:h-32 rounded-lg overflow-hidden shadow-lg cursor-pointer transition relative flex items-center justify-center"
+                    href={`/venues?sport_type=${category.name.toLowerCase()}`}
+                    className="flex-none w-40 md:w-48 h-24 md:h-32 rounded-lg overflow-hidden shadow-lg cursor-pointer transition relative flex items-center justify-center hover:scale-105"
                     style={{
                       backgroundImage: `url(${category.image})`,
                       backgroundSize: "cover",
@@ -300,7 +302,7 @@ const ArenaKita = () => {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <h3 className="font-bold text-base md:text-lg text-white text-center px-2">{category.name}</h3>
                     </div> */}
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

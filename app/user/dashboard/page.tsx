@@ -18,10 +18,10 @@ interface UserProfile {
 interface UserStats {
   total_bookings: number;
   pending_bookings: number;
+  confirmed_bookings: number;
   completed_bookings: number;
+  rejected_bookings: number;
   failed_bookings?: number;
-  cancelled_bookings?: number;
-  total_spending?: string;
 }
 
 interface Booking {
@@ -79,23 +79,18 @@ export default function UserDashboardHome() {
             // Calculate stats from bookings data
             const totalBookings = bookings.length;
             const pendingCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "PENDING").length;
+            const confirmedCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "CONFIRMED").length;
             const completedCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "COMPLETED").length;
+            const rejectedCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "REJECTED").length;
             const failedCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "FAILED").length;
-            const cancelledCount = bookings.filter((b: Booking) => b.booking_status?.toUpperCase() === "CANCELLED").length;
-
-            // Calculate total spending
-            const totalSpending = bookings.reduce((sum: number, b: Booking) => {
-              const price = parseFloat(b.raw_total_price || b.total_price || "0");
-              return sum + (isNaN(price) ? 0 : price);
-            }, 0);
 
             setStats({
               total_bookings: totalBookings,
               pending_bookings: pendingCount,
+              confirmed_bookings: confirmedCount,
               completed_bookings: completedCount,
+              rejected_bookings: rejectedCount,
               failed_bookings: failedCount,
-              cancelled_bookings: cancelledCount,
-              total_spending: totalSpending.toLocaleString("id-ID", { style: "currency", currency: "IDR" }),
             });
           }
         }
@@ -183,21 +178,27 @@ export default function UserDashboardHome() {
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             <StatCard title="Total Pemesanan" value={stats?.total_bookings ?? 0} icon={<BookOpen className="text-[#0d47a1]" size={24} />} highlight="Semua pesanan Anda" bgColor="bg-blue-50" />
-            <StatCard title="Pemesanan Pending" value={stats?.pending_bookings ?? 0} icon={<Clock className="text-amber-500" size={24} />} highlight="Menunggu konfirmasi" bgColor="bg-amber-50" />
-            <StatCard title="Selesai" value={stats?.completed_bookings ?? 0} icon={<TrendingUp className="text-emerald-600" size={24} />} highlight="Pesanan yang selesai" bgColor="bg-emerald-50" />
+            <StatCard title="Pesanan Pending" value={stats?.pending_bookings ?? 0} icon={<Clock className="text-amber-500" size={24} />} highlight="Menunggu konfirmasi" bgColor="bg-amber-50" />
+            <StatCard
+              title="Pesanan Berhasil"
+              value={stats?.confirmed_bookings ?? 0}
+              icon={<TrendingUp className="text-green-600" size={24} />}
+              highlight="Pesanan dikonfirmasi"
+              bgColor="bg-green-50"
+            />
+            <StatCard
+              title="Pesanan Selesai"
+              value={stats?.completed_bookings ?? 0}
+              icon={<BookOpen className="text-emerald-600" size={24} />}
+              highlight="Pesanan yang selesai"
+              bgColor="bg-emerald-50"
+            />
+            <StatCard title="Pesanan Ditolak" value={stats?.rejected_bookings ?? 0} icon={<Clock className="text-red-500" size={24} />} highlight="Pesanan ditolak" bgColor="bg-red-50" />
+            <StatCard title="Pesanan Gagal" value={stats?.failed_bookings ?? 0} icon={<BookOpen className="text-orange-500" size={24} />} highlight="Pesanan yang gagal" bgColor="bg-orange-50" />
           </div>
 
           {/* Additional Stats */}
-          {stats && (stats.failed_bookings || stats.cancelled_bookings || stats.total_spending) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stats.failed_bookings !== undefined && (
-                <StatCard title="Pesanan Gagal" value={stats.failed_bookings} icon={<BookOpen className="text-red-500" size={24} />} highlight="Pesanan yang gagal" bgColor="bg-red-50" />
-              )}
-              {stats.cancelled_bookings !== undefined && (
-                <StatCard title="Dibatalkan" value={stats.cancelled_bookings} icon={<Clock className="text-gray-500" size={24} />} highlight="Pesanan dibatalkan" bgColor="bg-gray-50" />
-              )}
-            </div>
-          )}
+          {stats && (stats.failed_bookings || stats.rejected_bookings) && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>}
         </>
       )}
     </section>

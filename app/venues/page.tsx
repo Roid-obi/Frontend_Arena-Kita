@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import VenueCard from "@/components/VenueCard";
@@ -42,11 +43,12 @@ const sportTypeOptions = [
 ];
 
 const VenuesPage = () => {
+  const searchParams = useSearchParams();
   const [venues, setVenues] = useState<TransformedVenue[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [sportType, setSportType] = useState<string>("");
-  const [city, setCity] = useState<string>("");
+  const [sportType, setSportType] = useState<string>(searchParams.get("sport_type") || "");
+  const [city, setCity] = useState<string>(searchParams.get("city") || "");
   const [cities, setCities] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const limit = 9;

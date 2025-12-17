@@ -54,14 +54,12 @@ export default function DashboardPesanan() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"PENDING" | "CONFIRMED" | "REJECTED" | "COMPLETED">("PENDING");
-  const [statusCounts, setStatusCounts] = useState<{ PENDING: number; CONFIRMED: number; REJECTED: number; COMPLETED: number }>(
-    {
-      PENDING: 0,
-      CONFIRMED: 0,
-      REJECTED: 0,
-      COMPLETED: 0,
-    }
-  );
+  const [statusCounts, setStatusCounts] = useState<{ PENDING: number; CONFIRMED: number; REJECTED: number; COMPLETED: number }>({
+    PENDING: 0,
+    CONFIRMED: 0,
+    REJECTED: 0,
+    COMPLETED: 0,
+  });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQrisModal, setShowQrisModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<UserBooking | null>(null);
