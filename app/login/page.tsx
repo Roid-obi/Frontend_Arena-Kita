@@ -7,29 +7,21 @@ import LoginModal from "@/components/LoginModal";
 import Navbar from "@/components/Navbar";
 
 export default function LoginPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      if (user.role === "admin") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/");
-      }
+    if (!isLoading && user) {
+      router.push(user.role === "admin" ? "/admin/dashboard" : "/");
     }
-  }, [user, authLoading, router]);
+  }, [user, isLoading, router]);
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>Loading...</div>
-      </div>
-    );
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       <LoginModal isOpen={true} onClose={() => router.push("/")} />
     </div>
