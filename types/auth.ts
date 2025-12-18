@@ -45,6 +45,7 @@ export interface RegisterData {
   phone_number: string;
   password: string;
   password_confirmation: string;
+  captcha_token?: string; // reCAPTCHA v3 token
 }
 
 export interface RegisterResponse {
@@ -84,18 +85,11 @@ export interface AuthContextType {
    * - user login → pakai recaptcha
    * - owner/admin → bisa tanpa recaptcha
    */
-  login: (
-    email: string,
-    password: string,
-    type: "user" | "owner",
-    recaptchaToken?: string
-  ) => Promise<"user" | "owner" | "admin" | void>;
+  login: (email: string, password: string, type: "user" | "owner", recaptchaToken?: string) => Promise<"user" | "owner" | "admin" | void>;
 
   register: (data: RegisterData) => Promise<void>;
 
-  verifyOtp: (
-    data: VerifyOtpData
-  ) => Promise<"user" | "owner" | "admin" | void>;
+  verifyOtp: (data: VerifyOtpData) => Promise<"user" | "owner" | "admin" | void>;
 
   logout: () => Promise<void>;
 

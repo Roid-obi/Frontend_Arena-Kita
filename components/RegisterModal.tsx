@@ -4,18 +4,14 @@ import { useState } from "react";
 import Script from "next/script";
 
 // Types for Google reCAPTCHA v3
-type Grecaptcha = {
+interface Grecaptcha {
   ready: (cb: () => void) => void;
   execute: (siteKey: string, options: { action: string }) => Promise<string>;
-};
-
-declare global {
-  interface Window {
-    grecaptcha?: Grecaptcha;
-  }
 }
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { RegisterData } from "@/types/auth";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -113,26 +109,39 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
 
     try {
       // Execute reCAPTCHA v3 to obtain token for registration
-      let captchaToken: string | null = null;
-      try {
-        const grecaptcha = window.grecaptcha;
-        if (!grecaptcha) {
-          throw new Error("Captcha belum siap. Mohon tunggu sebentar dan coba lagi.");
-        }
-        captchaToken = await new Promise<string>((resolve, reject) => {
-          grecaptcha.ready(() => {
-            grecaptcha
-              .execute(RECAPTCHA_SITE_KEY, { action: "register" })
-              .then((token: string) => resolve(token))
-              .catch((err: unknown) => reject(err));
-          });
-        });
-      } catch (capErr) {
-        console.error("reCAPTCHA error:", capErr);
-        throw new Error("Gagal memuat reCAPTCHA. Silakan refresh dan coba lagi.");
+      const grecaptcha = (window as Window & { grecaptcha?: Grecaptcha }).grecaptcha;
+      if (!grecaptcha) {
+        throw new Error("Captcha belum siap. Mohon tunggu sebentar dan coba lagi.");
       }
 
-      await register({ ...formData, captcha_token: captchaToken || undefined });
+      // Wait for reCAPTCHA to be ready and get the token
+      const captchaToken = await new Promise<string>((resolve, reject) => {
+        grecaptcha.ready(() => {
+          grecaptcha
+            .execute(RECAPTCHA_SITE_KEY, { action: "register" })
+            .then((token: string) => {
+              console.log("reCAPTCHA token generated successfully:", token.substring(0, 20) + "...");
+              resolve(token);
+            })
+            .catch((err: unknown) => {
+              console.error("reCAPTCHA execute error:", err);
+              reject(err);
+            });
+        });
+      });
+
+      if (!captchaToken) {
+        throw new Error("Gagal mendapatkan token Captcha. Silakan refresh dan coba lagi.");
+      }
+
+      // Prepare registration data with captcha_token
+      const registrationData: RegisterData = {
+        ...formData,
+        captcha_token: captchaToken,
+      };
+
+      console.log("Submitting registration with captcha token");
+      await register(registrationData);
       setSuccessMessage("Registrasi berhasil! Untuk melanjutkan, silahkan cek email Anda untuk kode OTP.");
       setShowOtpInput(true);
     } catch (err: unknown) {

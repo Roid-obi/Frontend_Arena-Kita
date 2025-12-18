@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { User, LoginData, RegisterData, AuthContextType, LoginResponse, RegisterResponse, VerifyOtpData, VerifyOtpResponse } from "@/types/auth";
+import { User, RegisterData, AuthContextType, LoginResponse, VerifyOtpData, VerifyOtpResponse } from "@/types/auth";
 import { API_BASE_URL } from "@/lib/api";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,6 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (data: RegisterData) => {
     try {
+      console.log("Sending registration data:", { ...data, password: "***", password_confirmation: "***" });
+
       const response = await fetch(`${API_BASE}/v1/auth/user/register`, {
         method: "POST",
         headers: {
@@ -78,12 +80,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registrasi gagal");
-      }
+      const responseData = await response.json();
+      console.log("Registration response:", responseData);
 
-      const responseData: RegisterResponse = await response.json();
+      if (!response.ok) {
+        // Extract detailed error message from backend
+        const errorMessage = responseData.message || responseData.error || "Registrasi gagal";
+        const errors = responseData.errors || responseData.data?.errors;
+
+        if (errors) {
+          // If there are validation errors, format them
+          const errorMessages = Object.entries(errors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`)
+            .join("; ");
+          throw new Error(errorMessages || errorMessage);
+        }
+
+        throw new Error(errorMessage);
+      }
 
       if (responseData.status === "success") {
         // Registration successful, now user needs to verify OTP
