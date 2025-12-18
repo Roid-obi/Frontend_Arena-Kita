@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getStorageUrl } from "@/lib/api";
 
 interface PhotoCarouselProps {
   photos: Array<{
@@ -31,8 +32,7 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
   };
 
   const getPhotoUrl = (url: string) => {
-    if (url.startsWith("http")) return url;
-    return `https://dev.api.arenakita.my.id/storage/${url}`;
+    return getStorageUrl(url);
   };
 
   return (

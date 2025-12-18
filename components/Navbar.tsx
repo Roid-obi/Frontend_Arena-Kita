@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home, X, Building2, ChevronDown } from "lucide-react";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import LoginModal from "./LoginModal";
@@ -80,7 +81,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/venues");
+        const response = await fetch(`${API_BASE_URL}/venues`);
         const result = await response.json();
         if (result.status === "success" && result.data) {
           setVenues(result.data);
@@ -100,14 +101,14 @@ export default function Navbar() {
         return;
       }
       try {
-        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/profile", {
+        const response = await fetch(`${API_BASE_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         const result = await response.json();
         if (result.status === "success" && result.data?.profile_photo_url) {
-          const photoUrl = result.data.profile_photo_url.startsWith("http") ? result.data.profile_photo_url : `https://dev.api.arenakita.my.id/storage/${result.data.profile_photo_url}`;
+          const photoUrl = getStorageUrl(result.data.profile_photo_url);
           setProfilePhotoUrl(photoUrl);
         } else {
           setProfilePhotoUrl(null);

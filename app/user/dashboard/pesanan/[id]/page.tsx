@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 interface BookingDetail {
     booking: {
@@ -55,7 +56,7 @@ export default function BookingDetailPage() {
                     return;
                 }
 
-                const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/bookings/${id}`, {
+                const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -94,7 +95,7 @@ export default function BookingDetailPage() {
             intervalId = setInterval(async () => {
                 try {
                     const token = Cookies.get("token");
-                    const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/bookings/${id}`, {
+                    const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                         },

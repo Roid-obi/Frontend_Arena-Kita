@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
 import Cookies from "js-cookie";
+import { API_BASE_URL } from "@/lib/api";
 
 interface User {
   id: number;
@@ -31,7 +32,7 @@ interface Booking {
   field_info: FieldInfo;
 }
 
-const BOOKINGS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/bookings";
+// Using centralized API_BASE_URL from lib/api
 
 type StatusTab = "PENDING" | "CONFIRMED" | "REJECTED" | "COMPLETED" | "FAILED";
 
@@ -67,7 +68,7 @@ export default function OwnerPesanan() {
       };
 
       for (const status of statuses) {
-        const response = await fetch(`${BOOKINGS_URL}?status=${status}`, {
+        const response = await fetch(`${API_BASE_URL}/owners/bookings?status=${status}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -93,7 +94,7 @@ export default function OwnerPesanan() {
         return;
       }
 
-      const url = `${BOOKINGS_URL}?status=${status}`;
+      const url = `${API_BASE_URL}/owners/bookings?status=${status}`;
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -175,7 +176,7 @@ export default function OwnerPesanan() {
         return;
       }
 
-      const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/bookings/${bookingId}/approve`, {
+      const response = await fetch(`${API_BASE_URL}/owners/bookings/${bookingId}/approve`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -211,7 +212,7 @@ export default function OwnerPesanan() {
         return;
       }
 
-      const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/bookings/${bookingId}/reject`, {
+      const response = await fetch(`${API_BASE_URL}/owners/bookings/${bookingId}/reject`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

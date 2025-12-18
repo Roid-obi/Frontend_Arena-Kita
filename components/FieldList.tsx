@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ChevronDown, Clock, DollarSign } from "lucide-react";
 import Cookies from "js-cookie";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface Booking {
   id: number;
@@ -59,7 +60,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     if (!url || url.includes("placehold.co")) {
       return "https://placehold.co/2000x1200?text=Hello+World";
     }
-    return `https://dev.api.arenakita.my.id/storage/${url}`;
+    return getStorageUrl(url);
   };
 
   const handePricingSchemeClick = (fieldId: number, schemeId: number) => {
@@ -153,7 +154,7 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
         booking_status: "PENDING",
       };
 
-      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

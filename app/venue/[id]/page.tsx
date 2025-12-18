@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { use } from "react";
 import { Clock, MapPin, Building2, ExternalLink, ArrowLeft } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 import PhotoCarousel from "@/components/PhotoCarousel";
 import FieldList from "@/components/FieldList";
 import bookingsData from "@/data/dummy/bookings.json";
@@ -64,7 +65,7 @@ export default function VenueDetailPage({ params }: PageProps) {
     const fetchVenueData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${id}`);
+        const response = await fetch(`${API_BASE_URL}/venues/${id}`);
         const result = await response.json();
 
         if (result.status === "success" && result.data) {

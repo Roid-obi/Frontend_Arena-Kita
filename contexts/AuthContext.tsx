@@ -3,10 +3,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { User, LoginData, RegisterData, AuthContextType, LoginResponse, RegisterResponse, VerifyOtpData, VerifyOtpResponse } from "@/types/auth";
+import { API_BASE_URL } from "@/lib/api";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE = "https://dev.api.arenakita.my.id/api";
+const API_BASE = API_BASE_URL.replace("/v1", "");
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

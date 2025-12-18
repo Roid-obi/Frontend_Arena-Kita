@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
 import Footer from "@/components/Footer";
@@ -72,7 +73,7 @@ const ArenaKita = () => {
     const fetchHome = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/home");
+        const response = await fetch(`${API_BASE_URL}/home`);
         const result = await response.json();
 
         if (result.status === "success" && result.data) {
@@ -84,16 +85,13 @@ const ArenaKita = () => {
 
           // Helper to normalize photo URLs
           const normalizePhotoUrl = (url: string): string => {
-            if (url.startsWith("http://") || url.startsWith("https://")) {
-              return url;
-            }
-            return `https://dev.api.arenakita.my.id/storage/${url}`;
+            return getStorageUrl(url);
           };
 
           // Fetch field types for each venue (for badges)
           const fetchVenueDetails = async (venueId: number): Promise<string[]> => {
             try {
-              const detailResponse = await fetch(`https://dev.api.arenakita.my.id/api/v1/venues/${venueId}`);
+              const detailResponse = await fetch(`${API_BASE_URL}/venues/${venueId}`);
               const detailResult = await detailResponse.json();
               if (detailResult.status === "success" && detailResult.data?.fields) {
                 const uniqueTypes = Array.from(new Set(detailResult.data.fields.map((field: { type: string }) => field.type.charAt(0).toUpperCase() + field.type.slice(1).toLowerCase())));

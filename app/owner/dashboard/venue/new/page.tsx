@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function NewVenuePage() {
   const [form, setForm] = useState({ venue_name: "", address: "", city: "", description: "", gps_coordinate: "", opening_time: "08:00", closing_time: "22:00" });
@@ -27,7 +28,7 @@ export default function NewVenuePage() {
       const opening_time = form.opening_time.length === 5 ? form.opening_time + ":00" : form.opening_time;
       const closing_time = form.closing_time.length === 5 ? form.closing_time + ":00" : form.closing_time;
       const payload = { ...form, opening_time, closing_time };
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

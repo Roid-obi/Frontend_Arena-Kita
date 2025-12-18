@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { Pencil, Trash2, X, Save } from "lucide-react";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface PricingScheme {
   id: number;
@@ -65,7 +66,7 @@ export default function OwnerFieldDetail() {
           setLoading(false);
           return;
         }
-        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}`, {
+        const res = await fetch(`${API_BASE_URL}/owners/fields/${fieldId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -129,7 +130,7 @@ export default function OwnerFieldDetail() {
         formData.append("field_photo", fieldPhoto);
       }
 
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/fields/${fieldId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -172,7 +173,7 @@ export default function OwnerFieldDetail() {
         alert("Token tidak ditemukan. Silakan login kembali.");
         return;
       }
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/fields/${fieldId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -212,7 +213,7 @@ export default function OwnerFieldDetail() {
       }
       setAddingPricing(true);
 
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}/pricing`, {
+      const res = await fetch(`${API_BASE_URL}/owners/fields/${fieldId}/pricing`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -270,7 +271,7 @@ export default function OwnerFieldDetail() {
       }
       setDeletingPricingId(pricingId);
 
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}/pricing/${pricingId}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/fields/${fieldId}/pricing/${pricingId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -305,7 +306,7 @@ export default function OwnerFieldDetail() {
   if (error) return <div className="text-red-600">{error}</div>;
   if (!field) return <div>Tidak ada data</div>;
 
-  const displayPhotoUrl = field.photo_url?.startsWith("http") ? field.photo_url : `https://dev.api.arenakita.my.id/storage/${field.photo_url}`;
+  const displayPhotoUrl = field.photo_url ? getStorageUrl(field.photo_url) : "https://placehold.co/600x400/0d47a1/ffffff?text=Field";
   const FIELD_PLACEHOLDER = "https://placehold.co/600x400/0d47a1/ffffff?text=Field";
 
   return (

@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
 import { X } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 
 interface User {
   id: number;
@@ -41,7 +42,7 @@ interface Transaction {
   booking: Booking;
 }
 
-const TRANSACTIONS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/transactions";
+// Using centralized API_BASE_URL from lib/api
 
 export default function OwnerTransaksi() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -62,7 +63,7 @@ export default function OwnerTransaksi() {
           return;
         }
 
-        const response = await fetch(TRANSACTIONS_URL, {
+        const response = await fetch(`${API_BASE_URL}/owners/transactions`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

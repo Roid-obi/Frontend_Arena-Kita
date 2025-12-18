@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { Pencil, Trash2, X, Save, PlusCircle, Eye } from "lucide-react";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface VenueDetail {
   id: number;
@@ -64,7 +65,7 @@ export default function OwnerVenueDetail() {
           setLoading(false);
           return;
         }
-        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/owners/venues/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -104,7 +105,7 @@ export default function OwnerVenueDetail() {
       try {
         const token = Cookies.get("token");
         if (!token) return;
-        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/fields`, {
+        const res = await fetch(`${API_BASE_URL}/owners/venues/${id}/fields`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -139,7 +140,7 @@ export default function OwnerVenueDetail() {
       try {
         const token = Cookies.get("token");
         if (!token) return;
-        const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/photos`, {
+        const res = await fetch(`${API_BASE_URL}/owners/venues/${id}/photos`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -149,7 +150,7 @@ export default function OwnerVenueDetail() {
         if (json?.status === "success" && Array.isArray(json.data)) {
           const normalized = json.data.map((p: { id: number; url?: string; photo_url?: string }) => {
             const raw = p.url ?? p.photo_url ?? "";
-            const full = raw?.startsWith("http") ? raw : `https://dev.api.arenakita.my.id/storage/${raw}`;
+            const full = getStorageUrl(raw);
             return { id: p.id, photo_url: full };
           });
           setVenuePhotos(normalized);
@@ -177,7 +178,7 @@ export default function OwnerVenueDetail() {
       const opening_time = form.opening_time.length === 5 ? form.opening_time + ":00" : form.opening_time;
       const closing_time = form.closing_time.length === 5 ? form.closing_time + ":00" : form.closing_time;
       const payload = { ...form, opening_time, closing_time };
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -210,7 +211,7 @@ export default function OwnerVenueDetail() {
         alert("Token tidak ditemukan. Silakan login kembali.");
         return;
       }
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -274,7 +275,7 @@ export default function OwnerVenueDetail() {
       const formData = new FormData();
       formData.append("photo_url", venuePhotoFile);
 
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/photos`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues/${id}/photos`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -285,7 +286,7 @@ export default function OwnerVenueDetail() {
       if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
       const json = await res.json();
       if (json?.status === "success") {
-        const normalizedUrl = json.data?.url?.startsWith("http") ? json.data.url : `https://dev.api.arenakita.my.id/storage/${json.data?.url}`;
+        const normalizedUrl = getStorageUrl(json.data?.url);
         const newPhoto = { id: json.data?.id ?? Date.now(), photo_url: normalizedUrl };
         setVenuePhotos((prev) => [...prev, newPhoto]);
         setVenuePhotoFile(null);
@@ -314,7 +315,7 @@ export default function OwnerVenueDetail() {
       }
       setDeletingPhotoId(photoId);
 
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/photos/${photoId}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues/${id}/photos/${photoId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -359,7 +360,7 @@ export default function OwnerVenueDetail() {
     const attemptPost = async (includePhoto: boolean) => {
       const token = Cookies.get("token");
       if (!token) throw new Error("Token tidak ditemukan");
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}/fields`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues/${id}/fields`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -399,7 +400,7 @@ export default function OwnerVenueDetail() {
         name: newFieldData.name,
         type: newFieldData.type,
         status: newFieldData.status || "AVAILABLE",
-        photoUrl: newFieldData.photo_url ? (newFieldData.photo_url.startsWith("http") ? newFieldData.photo_url : `https://dev.api.arenakita.my.id/storage/${newFieldData.photo_url}`) : null,
+        photoUrl: newFieldData.photo_url ? getStorageUrl(newFieldData.photo_url) : null,
       };
       setFields((prev) => [...prev, newField]);
 
@@ -426,7 +427,7 @@ export default function OwnerVenueDetail() {
         alert("Token tidak ditemukan. Silakan login kembali.");
         return;
       }
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/fields/${fieldId}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/fields/${fieldId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -495,7 +496,7 @@ export default function OwnerVenueDetail() {
           {venue.updated_at && <p className="text-xs text-gray-500">Diperbarui: {new Date(venue.updated_at).toLocaleString("id-ID")}</p>}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
             {(venuePhotos.length ? venuePhotos : (venue.venue_photo || []).map((p) => ({ id: p.id, photo_url: p.photo_url }))).map((p: { id: number; photo_url: string }) => {
-              const photoUrl = p.photo_url?.startsWith("http") ? p.photo_url : `https://dev.api.arenakita.my.id/storage/${p.photo_url}`;
+              const photoUrl = getStorageUrl(p.photo_url);
               return (
                 <div key={p.id} className="relative group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -741,10 +742,7 @@ export default function OwnerVenueDetail() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {fields.map((field) => {
               const FIELD_PLACEHOLDER = "https://placehold.co/300x200/0d47a1/ffffff?text=Field";
-              let displayPhotoUrl = field.photoUrl || FIELD_PLACEHOLDER;
-              if (field.photoUrl && !field.photoUrl.startsWith("http")) {
-                displayPhotoUrl = `https://dev.api.arenakita.my.id/storage/${field.photoUrl}`;
-              }
+              const displayPhotoUrl = field.photoUrl ? getStorageUrl(field.photoUrl) : FIELD_PLACEHOLDER;
 
               return (
                 <div key={field.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-100">

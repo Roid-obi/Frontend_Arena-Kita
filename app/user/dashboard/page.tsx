@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { BookOpen, Clock, TrendingUp, User, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface UserProfile {
   id: number;
@@ -47,7 +48,7 @@ export default function UserDashboardHome() {
         }
 
         // Fetch user profile
-        const profileResponse = await fetch("https://dev.api.arenakita.my.id/api/v1/profile", {
+        const profileResponse = await fetch(`${API_BASE_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -64,7 +65,7 @@ export default function UserDashboardHome() {
         }
 
         // Fetch booking stats - menggunakan endpoint bookings untuk count
-        const bookingsResponse = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+        const bookingsResponse = await fetch(`${API_BASE_URL}/bookings`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -133,7 +134,7 @@ export default function UserDashboardHome() {
                 {profile.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={profile.photo_url.startsWith("http") ? profile.photo_url : `https://dev.api.arenakita.my.id/storage/${profile.photo_url}`}
+                    src={getStorageUrl(profile.photo_url)}
                     alt={profile.full_name}
                     className="w-24 h-24 rounded-full object-cover border-4 border-white"
                   />

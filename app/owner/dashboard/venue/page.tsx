@@ -5,6 +5,7 @@ import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
 import { PlusCircle, Eye, Trash2 } from "lucide-react";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface OwnerVenueItem {
   id: number;
@@ -76,7 +77,7 @@ export default function OwnerVenue() {
 
   const getPhotoUrl = (url?: string | null) => {
     if (!url) return null;
-    return url.startsWith("http") ? url : `https://dev.api.arenakita.my.id/storage/${url}`;
+    return getStorageUrl(url);
   };
 
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function OwnerVenue() {
           return;
         }
 
-        const res = await fetch("https://dev.api.arenakita.my.id/api/v1/owners/venues", {
+        const res = await fetch(`${API_BASE_URL}/owners/venues`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -113,7 +114,7 @@ export default function OwnerVenue() {
               const photoResults = await Promise.all(
                 json.data.map(async (v: OwnerVenueItem) => {
                   try {
-                    const pr = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${v.id}/photos`, {
+                    const pr = await fetch(`${API_BASE_URL}/owners/venues/${v.id}/photos`, {
                       headers: { Authorization: `Bearer ${token2}`, Accept: "application/json" },
                     });
                     const pj = await pr.json();
@@ -121,7 +122,7 @@ export default function OwnerVenue() {
                       const urls: string[] = pj.data
                         .map((p: { photo_url?: string; url?: string }) => p.url || p.photo_url || "")
                         .filter(Boolean)
-                        .map((raw: string) => (raw.startsWith("http") ? raw : `https://dev.api.arenakita.my.id/storage/${raw}`));
+                        .map((raw: string) => getStorageUrl(raw));
                       return { id: v.id, urls };
                     }
                   } catch (e) {
@@ -160,7 +161,7 @@ export default function OwnerVenue() {
         alert("Token tidak ditemukan. Silakan login kembali.");
         return;
       }
-      const res = await fetch(`https://dev.api.arenakita.my.id/api/v1/owners/venues/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/owners/venues/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

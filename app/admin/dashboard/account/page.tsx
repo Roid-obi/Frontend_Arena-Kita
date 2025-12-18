@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 import { User, Mail, Phone, Calendar, Shield, Edit2, Camera, X, Save } from "lucide-react";
 import Image from "next/image";
+import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface ProfileData {
   id: number;
@@ -20,10 +21,7 @@ interface ProfileData {
 
 const getImageUrl = (url: string | null): string => {
   if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
-  }
-  return `https://dev.api.arenakita.my.id/storage/${url}`;
+  return getStorageUrl(url);
 };
 
 export default function DashboardAccount() {
@@ -53,7 +51,7 @@ export default function DashboardAccount() {
         return;
       }
 
-      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/profile", {
+      const response = await fetch(`${API_BASE_URL}/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -109,7 +107,7 @@ export default function DashboardAccount() {
         formData.append("profile_photo", selectedFile);
       }
 
-      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/profile", {
+      const response = await fetch(`${API_BASE_URL}/profile`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

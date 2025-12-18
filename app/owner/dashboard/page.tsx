@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { BarChart2, Clock, Wallet } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 
 interface OwnerStats {
   total_bookings: number;
@@ -38,8 +39,8 @@ interface Booking {
   field_info: FieldInfo;
 }
 
-const STATS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/dashboard/stats";
-const BOOKINGS_URL = "https://dev.api.arenakita.my.id/api/v1/owners/dashboard/bookings";
+// Using centralized API_BASE_URL from lib/api
+// Stats and bookings URLs will be constructed dynamically
 
 export default function OwnerDashboardHome() {
   const [stats, setStats] = useState<OwnerStats | null>(null);
@@ -59,7 +60,7 @@ export default function OwnerDashboardHome() {
           return;
         }
 
-        const response = await fetch(STATS_URL, {
+        const response = await fetch(`${API_BASE_URL}/owners/dashboard/stats`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -93,7 +94,7 @@ export default function OwnerDashboardHome() {
           return;
         }
 
-        const response = await fetch(BOOKINGS_URL, {
+        const response = await fetch(`${API_BASE_URL}/owners/dashboard/bookings`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

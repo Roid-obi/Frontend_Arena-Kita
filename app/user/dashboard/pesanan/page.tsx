@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
 import Cookies from "js-cookie";
+import { API_BASE_URL } from "@/lib/api";
 
 interface UserBooking {
   id: number;
@@ -79,7 +80,7 @@ export default function DashboardPesanan() {
       const token = Cookies.get("token");
       if (!token) return;
 
-      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +115,7 @@ export default function DashboardPesanan() {
           return;
         }
 
-        const response = await fetch("https://dev.api.arenakita.my.id/api/v1/bookings", {
+        const response = await fetch(`${API_BASE_URL}/bookings`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -164,7 +165,7 @@ export default function DashboardPesanan() {
       setProcessingPayment(true);
       const token = Cookies.get("token");
 
-      const response = await fetch("https://dev.api.arenakita.my.id/api/v1/transactions", {
+      const response = await fetch(`${API_BASE_URL}/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -212,7 +213,7 @@ export default function DashboardPesanan() {
       intervalId = setInterval(async () => {
         try {
           const token = Cookies.get("token");
-          const response = await fetch(`https://dev.api.arenakita.my.id/api/v1/bookings/${selectedBooking.id}`, {
+          const response = await fetch(`${API_BASE_URL}/bookings/${selectedBooking.id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
