@@ -25,7 +25,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, type: "user" | "owner") => {
+  const login = async (
+    email: string,
+    password: string,
+    type: "user" | "owner",
+    recaptchaToken?: string
+  ) => {
     try {
       const endpoint = type === "user" ? "/v1/auth/user/login" : "/v1/auth/owner/login";
 
@@ -34,7 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          recaptcha_token: recaptchaToken, // ⬅️ TAMBAHAN
+        }),
       });
 
       if (!response.ok) {
