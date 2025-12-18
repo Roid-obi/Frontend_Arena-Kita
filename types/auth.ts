@@ -3,7 +3,7 @@ export interface User {
   full_name: string;
   email: string;
   phone_number: string | null;
-  role: 'user' | 'owner' | 'admin';
+  role: "user" | "owner" | "admin";
   created_at: string;
   updated_at: string;
   email_verified_at?: string | null;
@@ -57,14 +57,15 @@ export interface RegisterData {
   phone_number: string;
   password: string;
   password_confirmation: string;
+  captcha_token?: string;
 }
 
 export interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string, type: 'user' | 'owner') => Promise<'user' | 'owner' | 'admin' | void>;
+  login: (email: string, password: string, type: "user" | "owner") => Promise<"user" | "owner" | "admin" | void>;
   register: (data: RegisterData) => Promise<void>;
-  verifyOtp: (data: VerifyOtpData) => Promise<'user' | 'owner' | 'admin' | void>;
+  verifyOtp: (data: VerifyOtpData) => Promise<"user" | "owner" | "admin" | void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
