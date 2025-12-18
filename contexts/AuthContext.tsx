@@ -26,12 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (
-    email: string,
-    password: string,
-    type: "user" | "owner",
-    recaptchaToken?: string
-  ) => {
+  const login = async (email: string, password: string, type: "user" | "owner", recaptchaToken?: string) => {
     try {
       const endpoint = type === "user" ? "/v1/auth/user/login" : "/v1/auth/owner/login";
 

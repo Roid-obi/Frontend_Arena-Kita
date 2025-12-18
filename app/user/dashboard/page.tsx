@@ -133,11 +133,7 @@ export default function UserDashboardHome() {
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 {profile.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={getStorageUrl(profile.photo_url)}
-                    alt={profile.full_name}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white"
-                  />
+                  <img src={getStorageUrl(profile.photo_url)} alt={profile.full_name} className="w-24 h-24 rounded-full object-cover border-4 border-white" />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center border-4 border-white">
                     <User size={48} />
