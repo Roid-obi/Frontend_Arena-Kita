@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           email,
           password,
-          recaptcha_token: recaptchaToken, // ⬅️ TAMBAHAN
+          ...(recaptchaToken && { captcha_token: recaptchaToken }),
         }),
       });
 

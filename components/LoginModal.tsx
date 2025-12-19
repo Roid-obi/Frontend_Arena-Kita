@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Script from "next/script";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -9,10 +10,9 @@ interface LoginModalProps {
   onClose: () => void;
 }
 
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
+interface Grecaptcha {
+  ready: (cb: () => void) => void;
+  execute: (siteKey: string, options: { action: string }) => Promise<string>;
 }
 
 const CloseIcon = () => (
@@ -22,26 +22,8 @@ const CloseIcon = () => (
   </svg>
 );
 
-// 🔐 Ambil token reCAPTCHA v3
-const getRecaptchaToken = async (): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    if (!window.grecaptcha) {
-      reject("reCAPTCHA not loaded");
-      return;
-    }
-
-    window.grecaptcha.ready(() => {
-      window.grecaptcha
-        .execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, {
-          action: "login",
-        })
-        .then((token: string) => resolve(token))
-        .catch(reject);
-    });
-  });
-};
-
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LefGy8sAAAAAByU9-wl68aqrS-JgN5cz5jIoZiZ";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -56,9 +38,33 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setIsLoading(true);
 
     try {
-      const recaptchaToken = await getRecaptchaToken();
+      // Execute reCAPTCHA v3 to obtain token for login
+      const grecaptcha = (window as Window & { grecaptcha?: Grecaptcha }).grecaptcha;
+      if (!grecaptcha) {
+        throw new Error("Captcha belum siap. Mohon tunggu sebentar dan coba lagi.");
+      }
 
-      const role = await login(email, password, "user", recaptchaToken);
+      // Wait for reCAPTCHA to be ready and get the token
+      const captchaToken = await new Promise<string>((resolve, reject) => {
+        grecaptcha.ready(() => {
+          grecaptcha
+            .execute(RECAPTCHA_SITE_KEY, { action: "login" })
+            .then((token: string) => {
+              console.log("reCAPTCHA token generated successfully:", token.substring(0, 20) + "...");
+              resolve(token);
+            })
+            .catch((err: unknown) => {
+              console.error("reCAPTCHA execute error:", err);
+              reject(err);
+            });
+        });
+      });
+
+      if (!captchaToken) {
+        throw new Error("Gagal mendapatkan token Captcha. Silakan refresh dan coba lagi.");
+      }
+
+      const role = await login(email, password, "user", captchaToken);
 
       onClose();
       if (role === "admin") {
@@ -66,8 +72,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       } else {
         router.push("/");
       }
-    } catch (err: any) {
-      setError(err?.message || "Login failed. Please check your credentials.");
+    } catch (err: Error | unknown) {
+      setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -76,49 +82,59 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 bg-white/50">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-bold">Sign in to your account</h2>
-          <button onClick={onClose}>
+        {/* reCAPTCHA v3 script */}
+        <Script src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`} strategy="afterInteractive" />
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900">Sign in to your account</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition" aria-label="Close modal">
             <CloseIcon />
           </button>
         </div>
 
         <div className="p-6">
-          {error && (
-            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
-              {error}
-            </div>
-          )}
+          {error && <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email address
+              </label>
               <input
+                id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
               <input
+                id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                placeholder="Enter your password"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 rounded-lg bg-[#0d47a1] text-white disabled:opacity-50"
+              className="w-full py-2 px-4 rounded-lg text-sm font-medium text-white bg-[#0d47a1] hover:bg-[#083055] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0d47a1] disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>

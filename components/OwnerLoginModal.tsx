@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Script from "next/script";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
 interface OwnerLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface Grecaptcha {
+  ready: (cb: () => void) => void;
+  execute: (siteKey: string, options: { action: string }) => Promise<string>;
 }
 
 const CloseIcon = () => (
@@ -17,6 +23,7 @@ const CloseIcon = () => (
 );
 
 export default function OwnerLoginModal({ isOpen, onClose }: OwnerLoginModalProps) {
+  const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LefGy8sAAAAAByU9-wl68aqrS-JgN5cz5jIoZiZ";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,7 +38,33 @@ export default function OwnerLoginModal({ isOpen, onClose }: OwnerLoginModalProp
     setIsLoading(true);
 
     try {
-      const role = await login(email, password, "owner");
+      // Execute reCAPTCHA v3 to obtain token for login
+      const grecaptcha = (window as Window & { grecaptcha?: Grecaptcha }).grecaptcha;
+      if (!grecaptcha) {
+        throw new Error("Captcha belum siap. Mohon tunggu sebentar dan coba lagi.");
+      }
+
+      // Wait for reCAPTCHA to be ready and get the token
+      const captchaToken = await new Promise<string>((resolve, reject) => {
+        grecaptcha.ready(() => {
+          grecaptcha
+            .execute(RECAPTCHA_SITE_KEY, { action: "login" })
+            .then((token: string) => {
+              console.log("reCAPTCHA token generated successfully:", token.substring(0, 20) + "...");
+              resolve(token);
+            })
+            .catch((err: unknown) => {
+              console.error("reCAPTCHA execute error:", err);
+              reject(err);
+            });
+        });
+      });
+
+      if (!captchaToken) {
+        throw new Error("Gagal mendapatkan token Captcha. Silakan refresh dan coba lagi.");
+      }
+
+      const role = await login(email, password, "owner", captchaToken);
       onClose();
       if (role === "owner") {
         router.push("/owner/dashboard");
@@ -51,6 +84,8 @@ export default function OwnerLoginModal({ isOpen, onClose }: OwnerLoginModalProp
   return (
     <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+        {/* reCAPTCHA v3 script */}
+        <Script src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`} strategy="afterInteractive" />
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">Owner Sign In</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition" aria-label="Close modal">
