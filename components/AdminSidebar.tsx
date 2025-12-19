@@ -25,8 +25,14 @@ export default function AdminSidebar() {
   return (
     <>
       {/* Mobile top trigger */}
+      <div className="md:hidden flex items-center justify-between bg-white shadow-md px-4 py-3">
+        <button onClick={() => setOpen(!open)} className="p-2 rounded-md text-[#0d47a1]">
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        <div className="text-lg font-semibold text-[#0d47a1]">Admin Dashboard</div>
+      </div>
 
-      {/* Mobile overlay menu full width */}
+      {/* Sidebar overlay for mobile (full width) */}
       {open && (
         <div className="md:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
