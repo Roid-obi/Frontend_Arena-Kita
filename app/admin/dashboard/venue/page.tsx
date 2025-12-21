@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import Pagination from "@/components/Pagination";
-import { Eye, Trash2, MapPin, Clock } from "lucide-react";
+import { Eye, Trash2, MapPin, Clock, Plus } from "lucide-react";
 import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 
 interface AdminVenueItem {
@@ -81,7 +82,7 @@ export default function AdminVenue() {
   const PLACEHOLDER_IMG = "https://placehold.co/300x200/0d47a1/ffffff?text=Venue";
 
   useEffect(() => {
-    const fetchVenues = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -92,6 +93,7 @@ export default function AdminVenue() {
           return;
         }
 
+        // Fetch venues
         const res = await fetch(`${API_BASE_URL}/admin/venues`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -118,7 +120,7 @@ export default function AdminVenue() {
       }
     };
 
-    fetchVenues();
+    fetchData();
   }, []);
 
   const handleDelete = async (id: number) => {
@@ -187,6 +189,10 @@ export default function AdminVenue() {
         <div className="w-full md:w-64">
           <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Cari venue atau pemilik..." />
         </div>
+        <Link href="/admin/dashboard/venue/new" className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-[#0d47a1] text-white rounded-lg hover:bg-[#083055] text-sm">
+          <Plus size={16} />
+          <span>Tambah Venue</span>
+        </Link>
       </div>
 
       {loading ? (
@@ -237,10 +243,13 @@ export default function AdminVenue() {
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-2 sm:pt-3">
-                    <button className="flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 flex-1 transition">
+                    <Link
+                      href={`/admin/dashboard/venue/${v.id}`}
+                      className="flex items-center justify-center gap-1 px-2 sm:px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 flex-1 transition"
+                    >
                       <Eye size={14} />
                       <span className="hidden sm:inline">Lihat</span>
-                    </button>
+                    </Link>
                     <button
                       onClick={() => handleDelete(v.id)}
                       disabled={deletingId === v.id}
