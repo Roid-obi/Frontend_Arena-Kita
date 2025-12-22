@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronDown, Clock, DollarSign } from "lucide-react";
-import Cookies from "js-cookie";
-import { API_BASE_URL, getStorageUrl } from "@/lib/api";
+import { API_BASE_URL, getApiUrl, getStorageUrl } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Booking {
   id: number;
@@ -48,12 +48,118 @@ interface FieldListProps {
   pricingSchemes?: PricingScheme[];
 }
 
-export default function FieldList({ fields, bookings, pricingSchemes = [] }: FieldListProps) {
+export default function FieldList({ fields, bookings: _bookings, pricingSchemes = [] }: FieldListProps) {
   const [expandedFieldId, setExpandedFieldId] = useState<number | null>(null);
   const [selectedPricingScheme, setSelectedPricingScheme] = useState<{ [fieldId: number]: number | null }>({});
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ [fieldId: number]: string | null }>({});
   const [selectedDate, setSelectedDate] = useState<{ [fieldId: number]: string | null }>({});
   const [isBooking, setIsBooking] = useState(false);
+  const { user, token } = useAuth();
+
+  const isLoggedIn = Boolean(user && token);
+  const isUserRole = user?.role === "user";
+
+  const [availabilityByField, setAvailabilityByField] = useState<
+    Record<
+      number,
+      {
+        bookedSlots: { start: string; end: string; status: string }[];
+        open?: string;
+        close?: string;
+        loading: boolean;
+        error?: string | null;
+      }
+    >
+  >({});
+
+  const todayDate = new Date().toISOString().split("T")[0];
+
+  const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const isSlotBooked = (slotStart: string, durationMinutes: number, bookedSlots: { start: string; end: string }[]) => {
+    const start = timeToMinutes(slotStart);
+    const end = start + durationMinutes;
+    return bookedSlots.some((b) => {
+      const bookedStart = timeToMinutes(b.start);
+      const bookedEnd = timeToMinutes(b.end);
+      return start < bookedEnd && end > bookedStart;
+    });
+  };
+
+  const buildSlots = (open?: string, close?: string) => {
+    const openMinutes = open ? timeToMinutes(open) : 6 * 60;
+    const closeMinutes = close ? timeToMinutes(close) : 23 * 60;
+    const slots: string[] = [];
+    for (let minutes = openMinutes; minutes < closeMinutes; minutes += 60) {
+      const h = Math.floor(minutes / 60)
+        .toString()
+        .padStart(2, "0");
+      const m = (minutes % 60).toString().padStart(2, "0");
+      slots.push(`${h}:${m}`);
+    }
+    return slots;
+  };
+
+  const fetchAvailability = async (fieldId: number, date: string) => {
+    setAvailabilityByField((prev) => ({
+      ...prev,
+      [fieldId]: {
+        bookedSlots: prev[fieldId]?.bookedSlots || [],
+        open: prev[fieldId]?.open,
+        close: prev[fieldId]?.close,
+        error: null,
+        loading: true,
+      },
+    }));
+
+    try {
+      const url = getApiUrl(`/fields/${fieldId}/availability?date=${date}`);
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || "Gagal mengambil ketersediaan jadwal");
+      }
+
+      const bookedSlots = json.data?.booked_slots || [];
+      const open = json.data?.venue_operational?.open;
+      const close = json.data?.venue_operational?.close;
+
+      setAvailabilityByField((prev) => ({
+        ...prev,
+        [fieldId]: {
+          bookedSlots,
+          open,
+          close,
+          loading: false,
+          error: null,
+        },
+      }));
+    } catch (error) {
+      setAvailabilityByField((prev) => ({
+        ...prev,
+        [fieldId]: {
+          bookedSlots: prev[fieldId]?.bookedSlots || [],
+          open: prev[fieldId]?.open,
+          close: prev[fieldId]?.close,
+          loading: false,
+          error: error instanceof Error ? error.message : "Gagal memuat jadwal",
+        },
+      }));
+    }
+  };
+
+  useEffect(() => {
+    if (expandedFieldId === null) return;
+    const date = selectedDate[expandedFieldId] || todayDate;
+    if (!selectedDate[expandedFieldId]) {
+      setSelectedDate((prev) => ({ ...prev, [expandedFieldId]: date }));
+    }
+    fetchAvailability(expandedFieldId, date);
+  }, [expandedFieldId]);
 
   const getFieldPhotoUrl = (url: string) => {
     console.log(typeof url, url);
@@ -85,20 +191,6 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     return `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
   };
 
-  const getAvailableTimeSlots = (fieldId: number): string[] => {
-    const fieldBookings = bookings.filter((booking) => booking.pricing_scheme_id === fieldId && booking.booking_status === "CONFIRMED");
-
-    // Generate time slots from 6:00 to 23:00 (1 hour per slot)
-    const allSlots: string[] = [];
-    for (let hour = 6; hour < 23; hour++) {
-      allSlots.push(`${String(hour).padStart(2, "0")}:00`);
-    }
-
-    // Filter out booked times
-    const bookedTimes = fieldBookings.map((b) => b.start_time.substring(0, 5));
-    return allSlots.filter((slot) => !bookedTimes.includes(slot));
-  };
-
   /*  const getFieldPricing = (fieldId: number) => {
     return pricingSchemes.filter((scheme) => scheme.field_id === fieldId);
   };*/
@@ -126,6 +218,16 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     const selectedTime = selectedTimeSlot[field.id];
     const bookingDateInput = selectedDate[field.id];
 
+    if (!isLoggedIn) {
+      alert("Harus login terlebih dahulu untuk melakukan pemesanan.");
+      return;
+    }
+
+    if (!isUserRole) {
+      alert("Hanya pengguna dengan role user yang dapat melakukan pemesanan.");
+      return;
+    }
+
     if (!selectedSchemeId || !selectedTime) {
       alert("Silakan pilih tanggal, paket harga, dan jam booking terlebih dahulu!");
       return;
@@ -137,11 +239,6 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
     setIsBooking(true);
 
     try {
-      const token = Cookies.get("token");
-      if (!token) {
-        return;
-      }
-
       const endTime = calculateEndTime(selectedTime, selectedScheme.duration_minutes);
       const bookingDate = bookingDateInput || new Date().toISOString().split("T")[0];
 
@@ -246,7 +343,14 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                             type="date"
                             value={selectedDate[field.id] || ""}
                             min={new Date().toISOString().split("T")[0]}
-                            onChange={(e) => setSelectedDate((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                            onChange={(e) => {
+                              const nextDate = e.target.value;
+                              setSelectedDate((prev) => ({ ...prev, [field.id]: nextDate }));
+                              if (nextDate) {
+                                fetchAvailability(field.id, nextDate);
+                                setSelectedTimeSlot((prev) => ({ ...prev, [field.id]: null }));
+                              }
+                            }}
                             className="px-3 py-2 border rounded-lg text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0d47a1] focus:border-[#0d47a1]"
                           />
                         </div>
@@ -278,23 +382,46 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
                                   <h5 className="font-semibold text-[#1a1a1a] text-sm md:text-base">Pilih Jam Booking:</h5>
                                 </div>
                                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-4">
-                                  {getAvailableTimeSlots(field.id).length > 0 ? (
-                                    getAvailableTimeSlots(field.id).map((time) => (
-                                      <button
-                                        key={time}
-                                        onClick={() => handleTimeSlotClick(field.id, time)}
-                                        className={`px-3 py-2 border font-semibold rounded-lg transition-colors text-xs md:text-sm shadow-sm ${
-                                          selectedTimeSlot[field.id] === time
-                                            ? "bg-[#f97316] border-[#f97316] text-white"
-                                            : "bg-white border-[#0d47a1]/30 text-[#0d47a1] hover:bg-[#0d47a1] hover:text-white"
-                                        }`}
-                                      >
-                                        {time}
-                                      </button>
-                                    ))
-                                  ) : (
-                                    <p className="text-sm text-gray-500 col-span-full">Tidak ada waktu yang tersedia untuk hari ini</p>
-                                  )}
+                                  {(() => {
+                                    const info = availabilityByField[field.id];
+                                    const bookedSlots = info?.bookedSlots || [];
+                                    const slots = buildSlots(info?.open, info?.close);
+                                    const selectedSchemeIdForField = selectedPricingScheme[field.id];
+                                    const selectedSchemeForField = pricing.find((s) => s.id === selectedSchemeIdForField);
+                                    const duration = selectedSchemeForField?.duration_minutes || 60;
+
+                                    if (info?.loading) {
+                                      return <p className="text-sm text-gray-500 col-span-full">Memuat ketersediaan jadwal...</p>;
+                                    }
+
+                                    if (info?.error) {
+                                      return <p className="text-sm text-red-600 col-span-full">{info.error}</p>;
+                                    }
+
+                                    if (slots.length === 0) {
+                                      return <p className="text-sm text-gray-500 col-span-full">Tidak ada waktu yang tersedia untuk hari ini</p>;
+                                    }
+
+                                    return slots.map((time) => {
+                                      const disabled = isSlotBooked(time, duration, bookedSlots);
+                                      return (
+                                        <button
+                                          key={time}
+                                          onClick={() => handleTimeSlotClick(field.id, time)}
+                                          disabled={disabled}
+                                          className={`px-3 py-2 border font-semibold rounded-lg transition-colors text-xs md:text-sm shadow-sm ${
+                                            disabled
+                                              ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                                              : selectedTimeSlot[field.id] === time
+                                              ? "bg-[#f97316] border-[#f97316] text-white"
+                                              : "bg-white border-[#0d47a1]/30 text-[#0d47a1] hover:bg-[#0d47a1] hover:text-white"
+                                          }`}
+                                        >
+                                          {time}
+                                        </button>
+                                      );
+                                    });
+                                  })()}
                                 </div>
                               </div>
                             )}
@@ -303,11 +430,13 @@ export default function FieldList({ fields, bookings, pricingSchemes = [] }: Fie
 
                         <button
                           onClick={() => handleBookNow(field)}
-                          disabled={!selectedPricingScheme[field.id] || !selectedTimeSlot[field.id] || isBooking}
+                          disabled={!isLoggedIn || !isUserRole || !selectedPricingScheme[field.id] || !selectedTimeSlot[field.id] || isBooking}
                           className="w-full px-4 py-2 md:py-3 bg-[#0d47a1] text-white font-semibold rounded-lg hover:bg-[#f97316] transition-colors text-sm md:text-base shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isBooking ? "Memproses..." : "Pesan Sekarang"}
                         </button>
+                        {!isLoggedIn && <p className="mt-2 text-sm text-red-600">Anda harus login sebagai user untuk memesan.</p>}
+                        {isLoggedIn && !isUserRole && <p className="mt-2 text-sm text-red-600">Hanya akun dengan role user yang dapat memesan.</p>}
                       </div>
                     ) : (
                       <div className="bg-yellow-50 border border-yellow-200 p-3 md:p-4 rounded-lg">

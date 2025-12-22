@@ -5,7 +5,17 @@ import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 import Link from "next/link";
-import { MapPin, Clock, User, Mail, Image as ImageIcon, BadgeCheck, ArrowLeft, Pencil, Trash2, Save, X } from "lucide-react";
+import dynamic from "next/dynamic";
+import { MapPin, Clock, User, Mail, Image as ImageIcon, BadgeCheck, ArrowLeft, Pencil, Trash2, Save, X, ExternalLink } from "lucide-react";
+
+const VenueMap = dynamic(() => import("@/components/VenueMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] rounded-xl bg-gray-100 animate-pulse flex items-center justify-center">
+      <p className="text-gray-500">Memuat peta...</p>
+    </div>
+  ),
+});
 
 interface AdminVenueDetail {
   id: number;
@@ -387,6 +397,64 @@ export default function AdminVenueDetailPage() {
                   <h3 className="text-lg font-semibold text-[#0d47a1] mb-2">Alamat</h3>
                   <p className="text-sm text-gray-700 whitespace-pre-line">{detail.address || "-"}</p>
                 </div>
+              </div>
+
+              {/* Location Map */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-[#0d47a1] mb-3">Lokasi</h3>
+                {(() => {
+                  let latitude = 0;
+                  let longitude = 0;
+                  let hasValidCoordinates = false;
+
+                  if (detail.gps_coordinate && detail.gps_coordinate.trim()) {
+                    try {
+                      const coords = detail.gps_coordinate.split(",").map((c) => {
+                        const parsed = parseFloat(c.trim());
+                        return isNaN(parsed) ? 0 : parsed;
+                      });
+                      latitude = coords[0] || 0;
+                      longitude = coords[1] || 0;
+                      hasValidCoordinates = latitude !== 0 || longitude !== 0;
+                    } catch (error) {
+                      console.log("Error parsing coordinates:", error);
+                      hasValidCoordinates = false;
+                    }
+                  }
+
+                  if (hasValidCoordinates) {
+                    return (
+                      <div className="space-y-4">
+                        {/* Interactive Map */}
+                        <VenueMap latitude={latitude} longitude={longitude} venueName={detail.venue_name} address={detail.address || ""} />
+
+                        {/* Google Maps Link */}
+                        <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer" className="block group">
+                          <div className="border-2 border-[#0d47a1] rounded-xl p-4 hover:shadow-xl transition-all bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-[#0d47a1] rounded-full p-3 flex-shrink-0 group-hover:bg-[#f97316] transition-colors">
+                                <MapPin className="text-white w-5 h-5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-bold text-[#1a1a1a]">Buka di Google Maps</h3>
+                                <p className="text-xs text-gray-600">
+                                  {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                                </p>
+                              </div>
+                              <ExternalLink className="w-5 h-5 text-[#0d47a1] group-hover:text-[#f97316] transition-colors flex-shrink-0" />
+                            </div>
+                          </div>
+                        </a>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="border-2 border-gray-200 rounded-xl p-6 bg-gray-50">
+                        <p className="text-gray-600 text-center py-4">Koordinat lokasi tidak tersedia</p>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
 
               {/* Photos */}
