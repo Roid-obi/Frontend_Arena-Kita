@@ -60,15 +60,17 @@ interface TransformedVenue {
 const ArenaKita = () => {
   const [bannerIndex, setBannerIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [venues, setVenues] = useState<TransformedVenue[]>([]);
+  const [venues, setVenues] = useState<TransformedVenue[]>([]); // nearest venues
   const [recommendations, setRecommendations] = useState<TransformedVenue[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [recPage, setRecPage] = useState(1);
   const recPerPage = 9;
   const [loading, setLoading] = useState(true);
+  const [nearestLoading, setNearestLoading] = useState(true);
+  const [deviceCoords, setDeviceCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [hoveredCarousel, setHoveredCarousel] = useState<string | null>(null);
 
-  // Fetch home data from API
+  // Fetch home data (categories, recommendations) from API
   useEffect(() => {
     const fetchHome = async () => {
       try {
@@ -112,34 +114,12 @@ const ArenaKita = () => {
           }));
           setCategories(categoryItems);
 
-          // Fetch sport types for nearest and recommendations
-          const nearestWithFields = await Promise.all(
-            (homeData.nearest || []).map(async (venue) => {
-              const sportTypes = await fetchVenueDetails(venue.id);
-              return { ...venue, sportTypes };
-            })
-          );
-
           const recommendationsWithFields = await Promise.all(
             (homeData.recommendations || []).map(async (venue) => {
               const sportTypes = await fetchVenueDetails(venue.id);
               return { ...venue, sportTypes };
             })
           );
-
-          // Transform API data to match component structure
-          const transformedVenues = nearestWithFields.slice(0, 5).map((venue) => ({
-            id: venue.id,
-            name: venue.venue_name,
-            location: venue.city,
-            hours: venue.opening_time && venue.closing_time ? `${venue.opening_time.slice(0, 5)} - ${venue.closing_time.slice(0, 5)}` : "Hubungi Venue",
-            images:
-              venue.photos && venue.photos.length > 0
-                ? venue.photos.map((photo) => normalizePhotoUrl(photo.url))
-                : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
-            sportTypes: venue.sportTypes,
-            category: "Olahraga",
-          }));
 
           const transformedRecommendations = recommendationsWithFields.map((venue) => ({
             id: venue.id,
@@ -152,8 +132,6 @@ const ArenaKita = () => {
                 : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(venue.venue_name)}`],
             sportTypes: venue.sportTypes,
           }));
-
-          setVenues(transformedVenues);
           setRecommendations(transformedRecommendations);
           setRecPage(1);
         }
@@ -165,6 +143,126 @@ const ArenaKita = () => {
     };
 
     fetchHome();
+  }, []);
+
+  // Fetch all venues for nearest calculation
+  useEffect(() => {
+    let cancelled = false;
+    const fetchAllVenues = async () => {
+      try {
+        setNearestLoading(true);
+        const response = await fetch(`${API_BASE_URL}/venues?limit=999`);
+        const result = await response.json();
+        if (!cancelled && result.status === "success" && Array.isArray(result.data)) {
+          const venuesData: VenueAPI[] = result.data.filter((v: VenueAPI) => typeof v.gps_coordinate === "string" && v.gps_coordinate.trim().length > 0);
+
+          // Get device location
+          const getDeviceLocation = () =>
+            new Promise<{ lat: number; lng: number } | null>((resolve) => {
+              if (!("geolocation" in navigator)) return resolve(null);
+              navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => resolve(null),
+                { enableHighAccuracy: true, timeout: 5000 }
+              );
+            });
+
+          const coords = await getDeviceLocation();
+          if (!coords) {
+            setDeviceCoords(null);
+            setVenues([]);
+            return;
+          }
+          setDeviceCoords(coords);
+
+          const parseLatLng = (s: string): { lat: number; lng: number } | null => {
+            const parts = s.split(",").map((p) => p.trim());
+            if (parts.length !== 2) return null;
+            const lat = Number(parts[0]);
+            const lng = Number(parts[1]);
+            if (!isFinite(lat) || !isFinite(lng)) return null;
+            return { lat, lng };
+          };
+
+          const toRad = (deg: number) => (deg * Math.PI) / 180;
+          const haversineKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+            const R = 6371; // km
+            const dLat = toRad(b.lat - a.lat);
+            const dLng = toRad(b.lng - a.lng);
+            const s1 = Math.sin(dLat / 2);
+            const s2 = Math.sin(dLng / 2);
+            const c = 2 * Math.asin(Math.sqrt(s1 * s1 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * s2 * s2));
+            return R * c;
+          };
+
+          // Calculate distances, sort, filter by threshold (e.g., 25km), take up to 6
+          const DISTANCE_THRESHOLD_KM = 25;
+
+          // Helper to normalize photo URLs
+          const normalizePhotoUrl = (url: string): string => getStorageUrl(url);
+
+          // Fetch sport types for selected nearest venues
+          const fetchVenueDetails = async (venueId: number): Promise<string[]> => {
+            try {
+              const detailResponse = await fetch(`${API_BASE_URL}/venues/${venueId}`);
+              const detailResult = await detailResponse.json();
+              if (detailResult.status === "success" && detailResult.data?.fields) {
+                const uniqueTypes = Array.from(new Set(detailResult.data.fields.map((field: { type: string }) => field.type.charAt(0).toUpperCase() + field.type.slice(1).toLowerCase())));
+                return uniqueTypes as string[];
+              }
+              return [];
+            } catch {
+              return [];
+            }
+          };
+
+          const scored = venuesData
+            .map((v) => ({ v, ll: parseLatLng(v.gps_coordinate || "") }))
+            .filter((x) => x.ll)
+            .map((x) => ({
+              v: x.v,
+              ll: x.ll as { lat: number; lng: number },
+              dist: haversineKm(coords, x.ll as { lat: number; lng: number }),
+            }))
+            .filter((x) => isFinite(x.dist))
+            .sort((a, b) => a.dist - b.dist)
+            .filter((x) => x.dist <= DISTANCE_THRESHOLD_KM)
+            .slice(0, 6);
+
+          const withTypes = await Promise.all(
+            scored.map(async (item) => {
+              const sportTypes = await fetchVenueDetails(item.v.id);
+              return { ...item, sportTypes };
+            })
+          );
+
+          const nearestTransformed: TransformedVenue[] = withTypes.map((item) => ({
+            id: item.v.id,
+            name: item.v.venue_name,
+            location: item.v.city,
+            hours: item.v.opening_time && item.v.closing_time ? `${item.v.opening_time.slice(0, 5)} - ${item.v.closing_time.slice(0, 5)}` : "Hubungi Venue",
+            images:
+              item.v.photos && item.v.photos.length > 0
+                ? item.v.photos.map((photo) => normalizePhotoUrl(photo.url))
+                : [`https://placehold.co/400x300/0d47a1/ffffff?text=${encodeURIComponent(item.v.venue_name)}`],
+            sportTypes: item.sportTypes,
+            category: "Olahraga",
+          }));
+
+          setVenues(nearestTransformed);
+        }
+      } catch (err) {
+        console.error("Error computing nearest venues:", err);
+        setVenues([]);
+      } finally {
+        if (!cancelled) setNearestLoading(false);
+      }
+    };
+
+    fetchAllVenues();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const nextBanner = () => {
@@ -318,9 +416,13 @@ const ArenaKita = () => {
         {/* Terdekat */}
         <section className="mb-1 md:mb-10">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
-          {loading ? (
+          {nearestLoading ? (
             <div className="text-center py-12">
               <p className="text-gray-600">Memuat venue...</p>
+            </div>
+          ) : venues.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Tidak tersedia venue terdekat.</p>
             </div>
           ) : (
             <div className="relative -mx-4 md:-mx-8 lg:mx-0" onMouseEnter={() => setHoveredCarousel("venue")} onMouseLeave={() => setHoveredCarousel(null)}>

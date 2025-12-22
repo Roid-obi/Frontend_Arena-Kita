@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { API_BASE_URL } from "@/lib/api";
+import LocationPicker from "@/components/LocationPicker";
 
 export default function NewVenuePage() {
   const [form, setForm] = useState({ venue_name: "", address: "", city: "", description: "", gps_coordinate: "", opening_time: "08:00", closing_time: "22:00" });
@@ -93,14 +94,16 @@ export default function NewVenuePage() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Koordinat GPS (opsional)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Lokasi di Peta</label>
+          <LocationPicker value={form.gps_coordinate} onChange={(value) => setForm((prev) => ({ ...prev, gps_coordinate: value }))} className="mb-2" />
           <input
             name="gps_coordinate"
             value={form.gps_coordinate}
             onChange={handleChange}
-            placeholder="Contoh: -6.2088,106.8456"
+            placeholder="Contoh: -6.208800,106.845600"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
           />
+          <p className="text-xs text-gray-500 mt-1">Koordinat akan terisi otomatis saat memilih di peta (format: lat,lng).</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
