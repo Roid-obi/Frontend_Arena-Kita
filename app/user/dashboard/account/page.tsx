@@ -81,6 +81,13 @@ export default function DashboardAccount() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validasi ukuran file maksimal 1MB
+      const maxSizeInBytes = 1 * 1024 * 1024; // 1MB
+      if (file.size > maxSizeInBytes) {
+        alert("Ukuran file terlalu besar. Maksimal 1MB.");
+        e.target.value = ""; // Reset input
+        return;
+      }
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
