@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, ShoppingCart, User, LayoutDashboard, LogOut, Menu, Home, X, Building2, ChevronDown } from "lucide-react";
-import { API_BASE_URL, getStorageUrl } from "@/lib/api";
+import { API_BASE_URL, getApiUrl, getStorageUrl } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import LoginModal from "./LoginModal";
@@ -95,30 +95,43 @@ export default function Navbar() {
 
   // Fetch user profile for photo
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchProfile = async () => {
       if (!token) {
         setProfilePhotoUrl(null);
         return;
       }
       try {
-        const response = await fetch(`${API_BASE_URL}/profile`, {
+        const response = await fetch(getApiUrl("/profile"), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          signal: controller.signal,
         });
+        if (!response.ok) {
+          setProfilePhotoUrl(null);
+          return;
+        }
+
         const result = await response.json();
         if (result.status === "success" && result.data?.profile_photo_url) {
           const photoUrl = getStorageUrl(result.data.profile_photo_url);
           setProfilePhotoUrl(photoUrl);
-        } else {
-          setProfilePhotoUrl(null);
+          return;
         }
+
+        setProfilePhotoUrl(null);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        // Network hiccups should not surface a console error overlay in dev
+        if (process.env.NODE_ENV === "development") {
+          console.warn("Profile fetch skipped:", error);
+        }
         setProfilePhotoUrl(null);
       }
     };
     fetchProfile();
+    return () => controller.abort();
   }, [token]);
 
   // Filter venues based on search query

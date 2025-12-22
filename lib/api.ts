@@ -6,9 +6,11 @@
 // export const API_BASE_URL = "https://dev.api.arenakita.my.id/api/v1";
 export const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 // export const API_BASE_URL = "https://unacquisitively-lakiest-jimmy.ngrok-free.dev/api/v1";
+
 // storage
 // export const STORAGE_BASE_URL = "https://dev.api.arenakita.my.id/storage";
 export const STORAGE_BASE_URL = "http://127.0.0.1:8000/storage";
+// export const STORAGE_BASE_URL = "https://unacquisitively-lakiest-jimmy.ngrok-free.dev/storage";
 
 /**
  * Helper function to construct storage URL
