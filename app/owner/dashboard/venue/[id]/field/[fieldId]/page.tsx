@@ -428,18 +428,20 @@ export default function OwnerFieldDetail() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Foto Lapangan (opsional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Foto Lapangan (opsional, Max 1MB)</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] text-sm"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#0d47a1] file:text-white hover:file:bg-[#083055] file:cursor-pointer cursor-pointer"
                 />
                 {photoPreview && (
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-600 mb-1">Preview:</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoPreview} alt="preview" className="w-full h-40 object-cover rounded" />
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-2 bg-gray-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photoPreview} alt="preview" className="w-[300px] h-[160px] object-cover rounded-lg" />
+                    </div>
                   </div>
                 )}
               </div>

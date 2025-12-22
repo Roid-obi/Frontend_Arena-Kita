@@ -35,10 +35,21 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
     return getStorageUrl(url);
   };
 
+  const isLocalhost = (url: string) => {
+    return url.includes('localhost') || url.includes('127.0.0.1');
+  };
+
   return (
     <div className="relative w-full h-48 sm:h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden group">
       {/* Main Image */}
-      <Image src={getPhotoUrl(photos[currentIndex].url)} alt={`Venue photo ${currentIndex + 1}`} fill className="object-cover" priority />
+      <Image 
+        src={getPhotoUrl(photos[currentIndex].url)} 
+        alt={`Venue photo ${currentIndex + 1}`} 
+        fill 
+        className="object-cover" 
+        priority 
+        unoptimized={isLocalhost(getPhotoUrl(photos[currentIndex].url))}
+      />
 
       {/* Previous Button */}
       {photos.length > 1 && (
