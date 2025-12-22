@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
 import Navbar from "@/components/Navbar";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export default function LoginPage() {
   const { user, isLoading } = useAuth();
@@ -17,7 +18,11 @@ export default function LoginPage() {
   }, [user, isLoading, router]);
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingIndicator label="Memeriksa sesi..." />
+      </div>
+    );
   }
 
   return (

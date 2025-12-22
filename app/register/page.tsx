@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import RegisterModal from "@/components/RegisterModal";
 import Navbar from "@/components/Navbar";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export default function RegisterPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -24,8 +25,8 @@ export default function RegisterPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingIndicator label="Memeriksa sesi..." />
       </div>
     );
   }

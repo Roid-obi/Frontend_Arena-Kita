@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import OwnerLoginModal from "@/components/OwnerLoginModal";
 import Navbar from "@/components/Navbar";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export default function OwnerLoginPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -22,8 +23,8 @@ export default function OwnerLoginPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingIndicator label="Memeriksa sesi..." />
       </div>
     );
   }

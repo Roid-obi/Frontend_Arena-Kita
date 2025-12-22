@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import VenueCard from "@/components/VenueCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Skeleton from "@/components/Skeleton";
+import VenueCardSkeleton from "@/components/VenueCardSkeleton";
 
 interface VenueAPI {
   id: number;
@@ -197,7 +199,11 @@ const VenuesPage = () => {
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-gray-600">Memuat semua venue...</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {Array.from({ length: limit }).map((_, idx) => (
+              <VenueCardSkeleton key={idx} />
+            ))}
+          </div>
         ) : filteredVenues.length === 0 ? (
           <div className="text-center py-16 text-gray-600">Tidak ada venue ditemukan.</div>
         ) : (

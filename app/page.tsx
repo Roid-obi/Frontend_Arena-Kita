@@ -6,6 +6,8 @@ import { API_BASE_URL, getStorageUrl } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import VenueCard from "@/components/VenueCard";
 import Footer from "@/components/Footer";
+import Skeleton from "@/components/Skeleton";
+import VenueCardSkeleton from "@/components/VenueCardSkeleton";
 import Banner1 from "../assets/image/Banner1.png";
 import Banner2 from "../assets/image/Banner2.png";
 import Banner3 from "../assets/image/Banner3.png";
@@ -383,23 +385,25 @@ const ArenaKita = () => {
                   WebkitOverflowScrolling: "touch",
                 }}
               >
-                {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/venues?sport_type=${category.name.toLowerCase()}`}
-                    className="flex-none md:flex-initial w-40 h-24 md:w-auto md:h-auto md:aspect-[5/3] rounded-xl overflow-hidden shadow-lg hover:shadow-xl cursor-pointer transition-transform duration-200 relative flex items-center justify-center hover:scale-[1.02]"
-                    style={{
-                      backgroundImage: `url(${category.image})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-3">
-                      <h3 className="font-semibold text-sm md:text-base text-white drop-shadow text-center truncate">{category.name}</h3>
-                    </div>
-                  </Link>
-                ))}
+                {loading
+                  ? Array.from({ length: 4 }).map((_, idx) => <Skeleton key={idx} className="flex-none md:flex-initial w-40 h-24 md:w-auto md:h-auto md:aspect-[5/3] rounded-xl" rounded="xl" />)
+                  : categories.map((category) => (
+                      <Link
+                        key={category.id}
+                        href={`/venues?sport_type=${category.name.toLowerCase()}`}
+                        className="flex-none md:flex-initial w-40 h-24 md:w-auto md:h-auto md:aspect-[5/3] rounded-xl overflow-hidden shadow-lg hover:shadow-xl cursor-pointer transition-transform duration-200 relative flex items-center justify-center hover:scale-[1.02]"
+                        style={{
+                          backgroundImage: `url(${category.image})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 p-3">
+                          <h3 className="font-semibold text-sm md:text-base text-white drop-shadow text-center truncate">{category.name}</h3>
+                        </div>
+                      </Link>
+                    ))}
               </div>
             </div>
 
@@ -417,8 +421,14 @@ const ArenaKita = () => {
         <section className="mb-1 md:mb-10">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Venue Terdekat</h2>
           {nearestLoading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Memuat venue...</p>
+            <div className="overflow-hidden px-1">
+              <div className="flex space-x-4 pb-2">
+                {Array.from({ length: 3 }).map((_, idx) => (
+                  <div key={idx} className="flex-none w-64 md:w-100">
+                    <VenueCardSkeleton />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : venues.length === 0 ? (
             <div className="text-center py-12">
@@ -470,8 +480,10 @@ const ArenaKita = () => {
         <section id="rekomendasi-section" className="">
           <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Rekomendasi Venue</h2>
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Memuat rekomendasi...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {Array.from({ length: recPerPage }).map((_, idx) => (
+                <VenueCardSkeleton key={idx} />
+              ))}
             </div>
           ) : (
             <>

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { BookOpen, Clock, TrendingUp, User, Mail, Phone, MapPin, Calendar } from "lucide-react";
 import { API_BASE_URL, getStorageUrl } from "@/lib/api";
+import Skeleton from "@/components/Skeleton";
 
 interface UserProfile {
   id: number;
@@ -118,10 +119,10 @@ export default function UserDashboardHome() {
 
       {loading ? (
         <>
-          <div className="mb-8 h-48 rounded-xl bg-gray-100 animate-pulse" />
+          <Skeleton className="mb-8 h-48 w-full" rounded="xl" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 rounded-xl bg-gray-100 animate-pulse" />
+              <Skeleton key={i} className="h-28 w-full" rounded="xl" />
             ))}
           </div>
         </>

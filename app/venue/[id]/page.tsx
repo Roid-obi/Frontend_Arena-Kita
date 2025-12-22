@@ -11,6 +11,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import Skeleton from "@/components/Skeleton";
 
 // Dynamic import for VenueMap to avoid SSR issues with Leaflet
 const VenueMap = dynamic(() => import("@/components/VenueMap"), {
@@ -85,8 +86,34 @@ export default function VenueDetailPage({ params }: PageProps) {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <p className="text-gray-600">Loading...</p>
+        <div className="min-h-screen bg-gray-50">
+          <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-6 space-y-6">
+            <Skeleton className="h-48 sm:h-64 md:h-96 w-full" rounded="xl" />
+
+            <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 lg:p-8 space-y-4">
+              <Skeleton className="h-7 w-2/3" rounded="md" />
+              <Skeleton className="h-4 w-full" rounded="md" />
+              <Skeleton className="h-4 w-3/4" rounded="md" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <Skeleton key={idx} className="h-16 w-full" rounded="lg" />
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 lg:p-8 space-y-4">
+              <Skeleton className="h-7 w-44" rounded="md" />
+              <Skeleton className="h-72 w-full" rounded="xl" />
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md p-4 md:p-6 lg:p-8 space-y-3">
+              <Skeleton className="h-7 w-48" rounded="md" />
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <Skeleton key={idx} className="h-4 w-full" rounded="md" />
+              ))}
+              <Skeleton className="h-16 w-full" rounded="lg" />
+            </div>
+          </div>
         </div>
       </>
     );

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { Users, Building2, TrendingUp, CreditCard } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import Skeleton from "@/components/Skeleton";
 
 interface AdminStats {
   total_users: number;
@@ -68,10 +69,10 @@ export default function AdminDashboardHome() {
 
       {loading ? (
         <>
-          <div className="mb-8 h-48 rounded-xl bg-gray-100 animate-pulse" />
+          <Skeleton className="mb-8 h-48 w-full" rounded="xl" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 rounded-xl bg-gray-100 animate-pulse" />
+              <Skeleton key={i} className="h-28 w-full" rounded="xl" />
             ))}
           </div>
         </>

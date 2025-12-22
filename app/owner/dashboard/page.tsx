@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { BarChart2, Clock, Wallet } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import Skeleton from "@/components/Skeleton";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 interface OwnerStats {
   total_bookings: number;
@@ -151,7 +153,7 @@ export default function OwnerDashboardHome() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 rounded-xl bg-gray-100 animate-pulse" />
+            <Skeleton key={i} className="h-28 w-full" rounded="xl" />
           ))}
         </div>
       ) : (
@@ -172,8 +174,8 @@ export default function OwnerDashboardHome() {
 
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           {bookingsLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#0d47a1]" />
+            <div className="p-8">
+              <LoadingIndicator label="Memuat booking terbaru..." />
             </div>
           ) : bookings.length === 0 ? (
             <div className="p-8 text-center text-gray-500">Tidak ada booking masuk</div>
