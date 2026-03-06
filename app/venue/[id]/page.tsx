@@ -167,7 +167,7 @@ export default function VenueDetailPage({ params }: PageProps) {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
+      <div className="min-h-screen bg-surface text-ink">
         {/* Back Button */}
         <div className="mx-auto px-4 md:px-8 lg:px-[150px] py-4 md:py-6">
           <Link href="/" className="inline-flex items-center gap-2 text-[#0d47a1] hover:text-[#f97316] font-semibold transition-colors group">

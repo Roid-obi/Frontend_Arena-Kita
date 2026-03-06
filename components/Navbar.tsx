@@ -171,8 +171,7 @@ export default function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowAutocomplete(true)}
                 onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
-                className="w-full h-10 px-4 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300"
-                style={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
+                className="w-full h-10 px-4 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300 bg-white text-ink"
               />
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <Search size={20} />
@@ -303,8 +302,7 @@ export default function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowAutocomplete(true)}
                 onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
-                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300"
-                style={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
+                className="w-full px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d47a1] border border-gray-300 bg-white text-ink"
               />
               <div className="absolute left-3 top-2.5 text-gray-400">
                 <Search size={20} />

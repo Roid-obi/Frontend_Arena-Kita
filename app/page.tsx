@@ -120,7 +120,7 @@ const ArenaKita = () => {
             (homeData.recommendations || []).map(async (venue) => {
               const sportTypes = await fetchVenueDetails(venue.id);
               return { ...venue, sportTypes };
-            })
+            }),
           );
 
           const transformedRecommendations = recommendationsWithFields.map((venue) => ({
@@ -165,7 +165,7 @@ const ArenaKita = () => {
               navigator.geolocation.getCurrentPosition(
                 (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
                 () => resolve(null),
-                { enableHighAccuracy: true, timeout: 5000 }
+                { enableHighAccuracy: true, timeout: 5000 },
               );
             });
 
@@ -235,7 +235,7 @@ const ArenaKita = () => {
             scored.map(async (item) => {
               const sportTypes = await fetchVenueDetails(item.v.id);
               return { ...item, sportTypes };
-            })
+            }),
           );
 
           const nearestTransformed: TransformedVenue[] = withTypes.map((item) => ({
@@ -318,7 +318,7 @@ const ArenaKita = () => {
   }, [recPage, totalRecPages]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
+    <div className="min-h-screen bg-surface text-ink">
       <Navbar />
 
       {/* Banner Carousel */}
@@ -327,7 +327,7 @@ const ArenaKita = () => {
           {banners.map((banner, index) => (
             <div key={banner.id} className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === bannerIndex ? "opacity-100" : "opacity-0"}`}>
               <Image src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-[#00000079] bg-opacity-40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-overlay flex items-center justify-center">
                 <div className="text-center text-white px-4">
                   <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-4">{banner.title}</h1>
                   <p className="text-sm md:text-xl">{banner.subtitle}</p>

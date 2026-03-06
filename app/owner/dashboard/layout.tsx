@@ -10,7 +10,7 @@ export const metadata = {
 export default function OwnerDashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <RoleProtectedRoute allowedRole="owner">
-      <div className="min-h-screen bg-[#f9fafb] text-[#1a1a1a]">
+      <div className="min-h-screen bg-surface text-ink">
         <Navbar />
         <OwnerSidebar />
         <div className="md:ml-64">

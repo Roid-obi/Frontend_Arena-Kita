@@ -30,7 +30,7 @@ export default function OwnerLoginPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
+    <div className="min-h-screen bg-surface text-ink">
       <Navbar />
       <OwnerLoginModal isOpen={true} onClose={() => router.push("/")} />
     </div>

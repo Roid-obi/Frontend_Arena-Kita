@@ -95,7 +95,7 @@ const VenuesPage = () => {
             venuesData.map(async (venue) => {
               const sportTypes = await fetchVenueDetails(venue.id);
               return { ...venue, sportTypes };
-            })
+            }),
           );
 
           const transformed = venuesWithTypes.map((venue) => ({
@@ -154,7 +154,7 @@ const VenuesPage = () => {
   const filteredVenues = useMemo(() => venues, [venues]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
+    <div className="min-h-screen bg-surface text-ink">
       <Navbar />
 
       <main className="mx-auto px-4 md:px-8 lg:px-[150px] py-6 md:py-10">
@@ -192,8 +192,7 @@ const VenuesPage = () => {
               placeholder="Cari nama atau kota venue..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0d47a1]"
-              style={{ backgroundColor: "#ffffff" }}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0d47a1] bg-white text-gray-800"
             />
           </div>
         </div>

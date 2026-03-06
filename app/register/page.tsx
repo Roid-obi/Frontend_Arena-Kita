@@ -32,7 +32,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f9fafb", color: "#1a1a1a" }}>
+    <div className="min-h-screen bg-surface text-ink">
       <Navbar />
       <RegisterModal isOpen={true} onClose={() => router.push("/")} onSwitchToLogin={() => router.push("/login")} />
     </div>

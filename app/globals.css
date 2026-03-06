@@ -6,6 +6,222 @@
 
 @import "tailwindcss";
 
+@theme {
+  /* Primary (main) #004aad */
+  --color-primary-50: #e6edf7;
+  --color-primary-100: #bfd2eb;
+  --color-primary-200: #99b7de;
+  --color-primary-300: #739bd2;
+  --color-primary-400: #4d80c6;
+  --color-primary-500: #004aad;
+  --color-primary-600: #00439c;
+  --color-primary-700: #003b8a;
+  --color-primary-800: #003479;
+  --color-primary-900: #002c68;
+  --color-primary-950: #002557;
+
+  /* Secondary (main) #ff8210 */
+  --color-secondary-50: #fff3e7;
+  --color-secondary-100: #ffe0c3;
+  --color-secondary-200: #ffcd9f;
+  --color-secondary-300: #ffba7c;
+  --color-secondary-400: #ffa858;
+  --color-secondary-500: #ff8210;
+  --color-secondary-600: #e6750e;
+  --color-secondary-700: #cc680d;
+  --color-secondary-800: #b35b0b;
+  --color-secondary-900: #994e0a;
+  --color-secondary-950: #804108;
+
+  --color-white: #ffffff;
+
+  /* Surface & ink */
+  --color-surface: #f9fafb;
+  --color-ink: #1a1a1a;
+  --color-overlay: #00000079;
+
+  /* Map existing blue/orange usages to the new theme */
+  --color-blue-50: #e6edf7;
+  --color-blue-100: #bfd2eb;
+  --color-blue-200: #99b7de;
+  --color-blue-300: #739bd2;
+  --color-blue-400: #4d80c6;
+  --color-blue-500: #004aad;
+  --color-blue-600: #00439c;
+  --color-blue-700: #003b8a;
+  --color-blue-800: #003479;
+  --color-blue-900: #002c68;
+  --color-blue-950: #002557;
+
+  --color-orange-50: #fff3e7;
+  --color-orange-100: #ffe0c3;
+  --color-orange-200: #ffcd9f;
+  --color-orange-300: #ffba7c;
+  --color-orange-400: #ffa858;
+  --color-orange-500: #ff8210;
+  --color-orange-600: #e6750e;
+  --color-orange-700: #cc680d;
+  --color-orange-800: #b35b0b;
+  --color-orange-900: #994e0a;
+  --color-orange-950: #804108;
+}
+
+@layer utilities {
+  /* Primary hex aliases */
+  .text-\[\#0d47a1\] {
+    color: var(--color-primary-500);
+  }
+
+  .text-\[\#1a1a1a\] {
+    color: var(--color-ink);
+  }
+
+  .bg-\[\#0d47a1\] {
+    background-color: var(--color-primary-500);
+  }
+
+  .bg-\[\#f9fafb\] {
+    background-color: var(--color-surface);
+  }
+
+  .bg-\[\#00000079\] {
+    background-color: var(--color-overlay);
+  }
+
+  .bg-\[\#0d47a1\]\/90 {
+    background-color: rgb(0 74 173 / 0.9);
+  }
+
+  .border-\[\#0d47a1\] {
+    border-color: var(--color-primary-500);
+  }
+
+  .border-\[\#0d47a1\]\/20 {
+    border-color: rgb(0 74 173 / 0.2);
+  }
+
+  .border-\[\#0d47a1\]\/30 {
+    border-color: rgb(0 74 173 / 0.3);
+  }
+
+  .border-t-\[\#0d47a1\] {
+    border-top-color: var(--color-primary-500);
+  }
+
+  .hover\:bg-\[\#0d47a1\]:hover {
+    background-color: var(--color-primary-500);
+  }
+
+  .hover\:text-\[\#0d47a1\]:hover {
+    color: var(--color-primary-500);
+  }
+
+  .focus\:ring-\[\#0d47a1\]:focus {
+    --tw-ring-color: var(--color-primary-500);
+  }
+
+  .focus\:border-\[\#0d47a1\]:focus {
+    border-color: var(--color-primary-500);
+  }
+
+  .from-\[\#0d47a1\] {
+    --tw-gradient-from: var(--color-primary-500);
+    --tw-gradient-to: rgb(0 0 0 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+
+  .to-\[\#1565c0\] {
+    --tw-gradient-to: var(--color-primary-600);
+  }
+
+  .to-\[\#1a5490\] {
+    --tw-gradient-to: var(--color-primary-700);
+  }
+
+  /* Primary dark variants */
+  .bg-\[\#083055\] {
+    background-color: var(--color-primary-800);
+  }
+
+  .hover\:bg-\[\#083055\]:hover {
+    background-color: var(--color-primary-800);
+  }
+
+  .hover\:text-\[\#083055\]:hover {
+    color: var(--color-primary-800);
+  }
+
+  .bg-\[\#0a3d8f\] {
+    background-color: var(--color-primary-700);
+  }
+
+  .hover\:bg-\[\#0a3d8f\]:hover {
+    background-color: var(--color-primary-700);
+  }
+
+  /* Secondary hex aliases */
+  .text-\[\#f97316\] {
+    color: var(--color-secondary-500);
+  }
+
+  .hover\:text-\[\#f97316\]:hover {
+    color: var(--color-secondary-500);
+  }
+
+  .bg-\[\#f97316\] {
+    background-color: var(--color-secondary-500);
+  }
+
+  .bg-\[\#f97316\]\/90 {
+    background-color: rgb(255 130 16 / 0.9);
+  }
+
+  .hover\:bg-\[\#f97316\]:hover {
+    background-color: var(--color-secondary-500);
+  }
+
+  .hover\:bg-\[\#ea580c\]:hover {
+    background-color: var(--color-secondary-600);
+  }
+
+  .border-\[\#f97316\] {
+    border-color: var(--color-secondary-500);
+  }
+
+  .group:hover .group-hover\:bg-\[\#f97316\] {
+    background-color: var(--color-secondary-500);
+  }
+
+  .group:hover .group-hover\:text-\[\#f97316\] {
+    color: var(--color-secondary-500);
+  }
+
+  .focus\:ring-\[\#f97316\]:focus {
+    --tw-ring-color: var(--color-secondary-500);
+  }
+
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+
+  .text-ink {
+    color: var(--color-ink);
+  }
+
+  .bg-overlay {
+    background-color: var(--color-overlay);
+  }
+
+  /* file: variant overrides */
+  .file\:bg-\[\#0d47a1\]::file-selector-button {
+    background-color: var(--color-primary-500);
+  }
+
+  .hover\:file\:bg-\[\#083055\]:hover::file-selector-button {
+    background-color: var(--color-primary-800);
+  }
+}
+
 /* Apply Manrope as the global font across the entire site */
 html,
 body {
